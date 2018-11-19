@@ -950,6 +950,8 @@ def askUserForScrapeYears():
         scrape_year = years[cutie.select(years, caption_indices=[0], 
                                          selected_index=1)]
         print(f'Proceeding to scrape statistics for {scrape_year}')
+        
+    return scrape_year
 
 #==============================================================================
 # Working Code
