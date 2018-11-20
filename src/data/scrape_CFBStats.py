@@ -6,10 +6,18 @@ Created on Mon Nov 12 12:56:56 2018
 @author: ejreidelbach
 
 :DESCRIPTION:
+    - Scrape statistical information for all NCAA FBS College Football
+        teams for every year available.  Statistics are output to individual
+        .cvs files for every category on a yearly basis.  Because the script
+        prompts the user for input concerning what years should be scraped,
+        it is possible to quickly update the statistics for the most current
+        year during each week of the season.
 
 :REQUIRES:
+    - Refer to `Package Import` section below for required packages
    
 :TODO:
+    - NONE
     
 """
  
@@ -35,10 +43,12 @@ def soupifyURL(url):
     '''
     Purpose: Turns a specified URL into BeautifulSoup formatted HTML 
 
-    Input: url (string): Link to the designated website to be scraped
+    Input: 
+        (1) url (string): Link to the designated website to be scraped
     
-    Output: soup (html): BeautifulSoup formatted HTML data stored as a
-        complex tree of Python objects
+    Output: 
+        (1) soup (html): BeautifulSoup formatted HTML data stored as a
+                complex tree of Python objects
     '''
     session = requests.Session()
     retry = Retry(connect=3, backoff_factor=0.5)
@@ -77,7 +87,7 @@ def directoryCheck(team_name):
         exists for the specified team and category. If it doesn't, create it.
         
     Input:
-        - team_name (string): Name of the school being scraped
+        (1) team_name (string): Name of the school being scraped
     
     Outpu:
         - NONE
@@ -97,12 +107,12 @@ def yearsToScrape(scrape_url, scrape_year):
         referenced in `scrape_url` and the years specified in `scrape_year`.
         
     Input:
-        - scrape_url (string): URL of the school's page on CFBStats.com
-        - scrape_year (string): Year to be scraped (default: all years)
+        (1) scrape_url (string): URL of the school's page on CFBStats.com
+        (2) scrape_year (string): Year to be scraped (default: all years)
         
     Output:
-        - dict_years (dictionary): Dictionary of all the links that need to be
-            scraped with the years as keys as and the links as values.
+        (1) dict_years (dictionary): Dictionary of all the links that need to 
+                be scraped with the years as keys as and the links as values.
     '''
     # create the storage dictionary
     dict_years = {}
@@ -135,11 +145,11 @@ def restructureSchedule(df_schedule):
             - calculate the point difference between the two teams
             
     Input:
-        - df_schedule (DataFrame): contains schedule/gamelog information for a 
-            team and associated information for a calendar season
+        (1) df_schedule (DataFrame): contains schedule/gamelog information for 
+                a team and associated information for a calendar season
     
     Output: 
-        - df_new (DataFrame): reengineered version of the original dataframe
+        (1) df_new (DataFrame): reengineered version of the original dataframe
               into the new, desired format
     '''
     list_rows = []
@@ -231,7 +241,7 @@ def scrapeTeamNames():
         - NONE
         
     Output:
-        - dict_teams (dictionary): Dictionary containing all FBS teams
+        (1) dict_teams (dictionary): Dictionary containing all FBS teams
                 and the URL to their respective team page
     '''
     # Turn the main page into BeautifulSoup HTML
@@ -256,10 +266,10 @@ def scrapeTeamYears(team_url):
         on file for that team
     
     Input:
-        - team_url (string): URL of the school's page on CFBStats.com
+        (1) team_url (string): URL of the school's page on CFBStats.com
     
     Output:
-        - dict_years (dictionary): Dictionary containing every year for which
+        (1) dict_years (dictionary): Dictionary containing every year for which
             team statistics are recorded and the URL to those statistics
     '''
     # Turn the page into BeautifulSoup HTML
@@ -285,12 +295,12 @@ def scrapeTeamRecords(team_name, team_url, year_scrape = 'all'):
     Purpose: Scrape the record portion of a team's stats for specified years
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of team stat page to be scraped
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of team stat page to be scraped
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
-        - A .csv file containing the scraped information (records/YYYY.csv)
+        (1) A .csv file containing the scraped information (records/YYYY.csv)
             for each year that is scraped
     '''
     # Create the dictionary of year(s) to scrape
@@ -342,12 +352,12 @@ def scrapeTeamRosters(team_name, team_url, year_scrape = 'all'):
     Purpose: Scrape the roster for every specified year
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of team stat page to be scraped
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of team stat page to be scraped
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
-        - A .csv file containing the scraped information (rosters/YYYY.csv)
+        (1) A .csv file containing the scraped information (rosters/YYYY.csv)
     '''
     # Create the dictionary of year(s) to scrape
     dict_years = yearsToScrape(team_url, year_scrape)
@@ -421,12 +431,12 @@ def scrapeTeamSchedules(team_name, team_url, year_scrape = 'all'):
     Purpose: Scrape the schedule portion of a team's stats for specified years
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of team stat page to be scraped
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of team stat page to be scraped
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
-        - A .csv file containing the scraped information (schedules/YYYY.csv)
+        (1) A .csv file containing the scraped information (schedules/YYYY.csv)
     '''
     # Create the dictionary of year(s) to scrape
     dict_years = yearsToScrape(team_url, year_scrape)
@@ -481,13 +491,13 @@ def scrapeTeamStatsCategories(team_url, type_stat):
         available for a given team on CFBStats.com.
     
     Input:
-        - team_url (string): URL of the school's page on CFBStats.com
-        - type_stat (string): Type of Statistical Links that need to be scraped
-            (e.g. `split`, `situational`, `game`)
+        (1) team_url (string): URL of the school's page on CFBStats.com
+        (2) type_stat (string): Type of Statistical Links that need to be 
+                scraped (e.g. `split`, `situational`, `game`)
     
     Outpu:
-        - dict_link (Dictionary): A dictionary where the keys are the 
-            statistical category and the values are the associated links
+        (1) dict_link (Dictionary): A dictionary where the keys are the 
+                statistical category and the values are the associated links
     '''
     # Identify the available split stats for the team
     dict_links = {}
@@ -556,12 +566,12 @@ def scrapeTeamStatsSplits(team_name, team_url, year_scrape = 'all'):
         every available statistical category
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of the school's page on CFBStats.com
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of the school's page on CFBStats.com
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
-        - A .csv file containing the scraped information 
+        (1) A .csv file containing the scraped information 
             (splits/category_YYYY.csv)
     '''
     # Obtain Stat Category links
@@ -621,12 +631,12 @@ def scrapeTeamStatsSituational(team_name, team_url, year_scrape = 'all'):
         every available statistical category
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of the school's page on CFBStats.com
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of the school's page on CFBStats.com
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
-        - A .csv file containing the scraped information 
+        (1) A .csv file containing the scraped information 
             (situational/category_YYYY.csv)
     '''
     # Obtain Stat Category links
@@ -682,12 +692,12 @@ def scrapeTeamStatsGameLogs(team_name, team_url, year_scrape = 'all'):
         every available statistical category
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of the school's page on CFBStats.com
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of the school's page on CFBStats.com
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
-        - A .csv file containing the scraped information 
+        (1) A .csv file containing the scraped information 
             (games/category_YYYY.csv)
     '''
     # Obtain Stat Category links
@@ -756,12 +766,12 @@ def scrapePlayerStats(team_name, team_url, year_scrape = 'all'):
         category for the specified years.
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of the school's page on CFBStats.com
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of the school's page on CFBStats.com
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
-        - A .csv file containing the scraped information (players/YYYY.csv)
+        (1) A .csv file containing the scraped information (players/YYYY.csv)
     '''
     # Obtain Stat Category links
     dict_links = scrapeTeamStatsCategories(team_url, 'player')
@@ -829,10 +839,10 @@ def extractNameFirst(name):
         first and last name variables (accounting for suffixes such as Jr./Sr.)
     
     Input:
-        - name (string): Player's name in the format `Last name, First name`
+        (1) name (string): Player's name in the format `Last name, First name`
     
     Output:
-        - (string): The player's first name
+        (1) (string): The player's first name
     '''
     list_split_name = name.split(', ')   # split name on `, `
     
@@ -849,10 +859,10 @@ def extractNameLast(name):
         `Last Name, First Name` (accounting for suffixes such as Jr./Sr.)
     
     Input:
-        - name (string): Player's name in the format `Last name, First name`
+        (1) name (string): Player's name in the format `Last name, First name`
     
     Output:
-        - (string): The player's last name (to include suffixes)
+        (1) (string): The player's last name (to include suffixes)
     '''
     list_split_name = name.split(', ')   # split name on `, `
     
@@ -869,7 +879,7 @@ def extractHeightInches(height):
         a variable of inches only (i.e. feet * 12 inches + inches)
         
     Input:
-        - height (string): Height of player formatted in `Feet - Inches`
+        (1) height (string): Height of player formatted in `Feet - Inches`
     
     Output:
         - (int): Height of player in total inches
@@ -888,9 +898,9 @@ def scrapeAllTeamStats(team_name, team_url, year_scrape = 'all'):
         college teams on CFBStats.com
         
     Input:
-        - team_name (string): Name of the school being scraped
-        - team_url (string): URL of the school's page on CFBStats.com
-        - year_scrape (string): Year to be scraped (default: all years)
+        (1) team_name (string): Name of the school being scraped
+        (2) team_url (string): URL of the school's page on CFBStats.com
+        (3) year_scrape (string): Year to be scraped (default: all years)
     
     Output:
         - None
@@ -930,7 +940,7 @@ def askUserForScrapeYears():
         - NONE
         
     Output:
-        - scrape_year (string): Year that the user requests data for 
+        (1) scrape_year (string): Year that the user requests data for 
             (allowed values are from 2009-2018 or 'all') [default = 'all']
     '''
     # Set the default for scraping to all years

@@ -21,27 +21,7 @@ import pathlib
 
 #==============================================================================
 # Function Definitions / Reference Variable Declaration
-#==============================================================================
-def function_name(var1, var2, var3):
-    '''
-    Purpose: Stuff goes here
-
-    Input:   
-        (1) var1 (type): description
-        (2) var2 (type): description
-        (3) var3 (type): description
-    
-    Output: 
-        (1) output1 (type): description
-    '''
-#==============================================================================
-# Working Code
-#==============================================================================
-
-# Set the project working directory
-dir_path = pathlib.Path('/home/ejreidelbach/Projects/')
-#os.chdir(r'/home/ejreidelbach/Projects')
-
+#==============================================================================   
 def aggregateRosters():
     '''
     Purpose: Ingest roster information for all teams and combine into one 
@@ -88,9 +68,17 @@ def cleanRoster(roster):
         indicator if a player redshirted in their career)
         
     Input:
-        - roster (DataFrame): Table containing a team's roster information
+        (1) roster (DataFrame): Table containing a team's roster information
         
     Output:
-        - roster_clean (DataFrame): Table with missing values filled in and
+        (1) roster_clean (DataFrame): Table with missing values filled in and
             redshirt variables included
     '''
+
+#==============================================================================
+# Working Code
+#==============================================================================
+
+# Set the project working directory
+dir_path = pathlib.Path('/home/ejreidelbach/Projects/')
+#os.chdir(r'/home/ejreidelbach/Projects')
