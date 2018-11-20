@@ -65,7 +65,7 @@ def initializeFolderStructure():
     '''
     Purpose: Create the desired folder structure for all Division 1 football
         teams (1 folder for each team with subfolders for each statistical
-        category)
+        category) in the `data/raw/CFBStats/` folder
         
     Input:
         - NONE
@@ -83,7 +83,7 @@ def initializeFolderStructure():
 
 def directoryCheck(team_name):
     '''
-    Purpose: Run a check of the /Data/CFBStats/ folder to see if a folder
+    Purpose: Run a check of the /data/raw/CFBStats/ folder to see if a folder
         exists for the specified team and category. If it doesn't, create it.
         
     Input:
@@ -926,6 +926,9 @@ def scrapeAllTeamStats(team_name, team_url, year_scrape = 'all'):
     # Scrape Statistical Game Logs for every year
     scrapeTeamStatsGameLogs(team_name, team_url, year_scrape)
     
+    # Scrape Player Statistics for ever year
+    scrapePlayerStats(team_name, team_url, year_scrape)
+    
     # Provide a status update
     print('Done with: ' + team_name)  
 
@@ -974,11 +977,15 @@ os.chdir(project_dir)
 # Create a dictionary of team names and links and verify all folders exist
 dict_teams = initializeFolderStructure()
 
+# Prompt the user to enter the years that should be scraped
 scrape_year = askUserForScrapeYears()
 
 # Scrape the stats for each team (creating CSV files along the way)
 for team_name, team_url in dict_teams.items():
-    scrapeAllTeamStats(team_name, team_url, scrape_year)
+    #scrapeAllTeamStats(team_name, team_url, scrape_year)
+    scrapePlayerStats(team_name, team_url, scrape_year)
+    # Provide a status update
+    print('Done with: ' + team_name)  
     
 ## Scrape the stats for each team (creating CSV files along the way)
 #list_teams = list(dict_teams.keys())
