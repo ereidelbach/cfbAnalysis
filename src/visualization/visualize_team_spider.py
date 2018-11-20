@@ -18,6 +18,9 @@ Created on Tue Nov 20 11:24:47 2018
 import os  
 import pandas as pd
 import pathlib
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
 
 #==============================================================================
 # Function Definitions / Reference Variable Declaration
@@ -39,5 +42,9 @@ def function_name(var1, var2, var3):
 #==============================================================================
 
 # Set the project working directory
-dir_path = pathlib.Path('/home/ejreidelbach/Projects/')
-#os.chdir(r'/home/ejreidelbach/Projects')
+path_project = pathlib.Path('/home/ejreidelbach/Projects/cfbAnalysis')
+os.chdir(path_project)
+
+# Attempt to visualize the Nebraska Cornhuskers
+df = pd.read_csv(pathlib.Path('data/interim/CFBStats/Nebraska/situations' + 
+                              '/passing_offense_situational.csv'))

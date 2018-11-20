@@ -676,6 +676,9 @@ def scrapeTeamStatsSituational(team_name, team_url, year_scrape = 'all'):
             df_year = df_year[df_year['Situation'] != str(
                     '1st: First Downs; 15+: Pass completions of 15 or more ' + 
                     'yards; 25+: Pass completions of 25 or more yards')]
+            df_year = df_year[df_year['Situation'] != str(
+                    '1st: First Downs; 10+: Rush attempts of 10 or more ' + 
+                    'yards; 20+: Rush attempts of 20 or more yards')]
 
             # Make all column headers lower-case for standardization
             df_year.columns = [x.lower() for x in list(
@@ -982,13 +985,10 @@ scrape_year = askUserForScrapeYears()
 
 # Scrape the stats for each team (creating CSV files along the way)
 for team_name, team_url in dict_teams.items():
-    #scrapeAllTeamStats(team_name, team_url, scrape_year)
-    scrapePlayerStats(team_name, team_url, scrape_year)
-    # Provide a status update
-    print('Done with: ' + team_name)  
+    scrapeAllTeamStats(team_name, team_url, scrape_year)
     
-## Scrape the stats for each team (creating CSV files along the way)
+# Scrape the stats for each team (creating CSV files along the way)
 #list_teams = list(dict_teams.keys())
-#for team_name in list_teams[list_teams.index('Oregon'):]:
+#for team_name in list_teams[list_teams.index('Georgia Southern'):]:
 #    team_url = dict_teams[team_name]
 #    scrapeAllTeamStats(team_name, team_url)
