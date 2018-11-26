@@ -28,7 +28,7 @@ def identifyRawData(path_project):
     Purpose: In their raw format, statistics are broken out into individual 
         files for each category, for every available year. This function
         loops over every stat folder, for each team, in `data/raw/CFBStats`
-        and create a dictionary to store a record of folders that exist 
+        and creates a dictionary to store a record of folders that exist 
         for each team       
         
     Input:
@@ -148,7 +148,7 @@ def writeAggregateStatsToFile(list_path_files, path_category, name_category):
     '''
     Purpose: Write a Pandas DataFrame (df_all) containing statistical 
         information for all years within a category to a .csv file in the
-        `data/interim/CFBStats/path_category` folder
+        `data/interim/CFBStats/team_name/path_category` folder
     
     Input:
         (1) list_path_files (list): List of file path's for every yearly
