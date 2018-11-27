@@ -6,6 +6,9 @@ Created on Mon Nov 19 15:55:09 2018
 @author: ejreidelbach
 
 :DESCRIPTION:
+    - Reads in all team data contained within `data/interim/CFBStats/', combines
+        it so that info for every team is condensed down to one file for per
+        category and writes the the new file to `data/interim/CFBStats/ALL`
 
 :REQUIRES:
    
@@ -23,8 +26,6 @@ import tqdm
 #==============================================================================
 # Reference Variable Declaration
 #============================================================================== 
-#list_stats_defense = ['rushing', 'passing', 'receiving',]
-#list_stats_offense = []
 list_stats_special = ['punt_returns', 'kickoff_returns', 'punting', 'kickoffs',
                       'place_kicking',]
 
@@ -32,7 +33,7 @@ list_stats_special = ['punt_returns', 'kickoff_returns', 'punting', 'kickoffs',
 list_vars_game = ['date', 'opponent', 'opp_rank', 'home_away', 'result', 
                   'pts_for', 'pts_against', 'pts_diff', 'surface',
                   'month', 'day', 'year', 'day_of_week', 'season', 'team']
-list_vars_split = ['split', 'g', 'season', 'team']
+list_vars_split = ['split', 'season', 'team']
 list_vars_situational = ['situation', 'g', 'season', 'team']
 
 #==============================================================================
@@ -120,16 +121,25 @@ def directoryCheck(list_stat_folders):
     Output:
         - NONE
     '''
-    # Check for the 'ALL' data folder 
+    # Check for the 'ALL' data folder and create it if not present
     pathlib.Path('data/interim/CFBStats/' + 'ALL').mkdir(
             parents=True, exist_ok=True)
     # Iterate over every statistical sub-folder in the 'ALL' data folder
     for category in list_stat_folders:
-        # Check for required sub-folders
+        # Check for required sub-folders and create them if not present
         pathlib.Path('data/interim/CFBStats/ALL', category).mkdir(
                 parents=True, exist_ok=True)
-        
+    # Check for the 'merged' folder and create it if not present
     pathlib.Path('data/interim/CFBStats/ALL', 'merged').mkdir(
+            parents=True, exist_ok=True)
+    # Check for every statistical sub-folder in the `merged` folder and
+    #   create it if not present
+    for category in list_stat_folders:
+        # Check for the recquired sub-folder and create it if not present
+        pathlib.Path('data/interim/CFBStats/ALL/merged', category).mkdir(
+                parents=True, exist_ok=True)        
+    # Check for the `merged_final` folder and create it if not present
+    pathlib.Path('data/interim/CFBStats/ALL', 'merged_final').mkdir(
             parents=True, exist_ok=True)
     
 def combineYears(path_project, dict_stat_files):
@@ -243,12 +253,14 @@ def mergeStatsGame(path_project):
             elif any(x in category for x in list_stats_special):
                 if len(df_spc) == 0:
                     df_spc = df_year
-                df_spc = df_spc.merge(df_year, on=list_vars_game)
+                else:
+                    df_spc = df_spc.merge(df_year, on=list_vars_game)
             # Offensive-related files
             elif 'offense' in category or 'team' in category:
                 if len(df_off) == 0:
                     df_off = df_year
-                df_off = df_off.merge(df_year, on=list_vars_game)
+                else:
+                    df_off = df_off.merge(df_year, on=list_vars_game)
             # Defensive-related files
             elif 'defense' in category \
                 or 'opponent' in category \
@@ -258,7 +270,8 @@ def mergeStatsGame(path_project):
                 or 'tackles' in category:
                 if len(df_def) == 0:
                     df_def = df_year
-                df_def = df_def.merge(df_year, on=list_vars_game)
+                else:
+                    df_def = df_def.merge(df_year, on=list_vars_game)
             # Add turnover stats to offense and defense
             elif 'turnover' in category:
                 df_off = df_off.merge(df_year, on=list_vars_game)
@@ -268,14 +281,14 @@ def mergeStatsGame(path_project):
                 print(category.split('games/')[1])
     
         # Export all merged dataframes to a CSV file for that year
-        df_def.to_csv(path_dir.parent.joinpath('merged/game_offense_' + year 
+        df_def.to_csv(path_dir.parent.joinpath('merged/game_defense_' + year 
                                                + '.csv'), index = False)
-        df_off.to_csv(path_dir.parent.joinpath('merged/game_defense_' + year 
+        df_off.to_csv(path_dir.parent.joinpath('merged/game_offense_' + year 
                                         + '.csv'), index = False)
         df_spc.to_csv(path_dir.parent.joinpath('merged/game_special_' + year 
                                         + '.csv'), index = False)
 
-def mergeStatsSituational():
+def mergeStatsSituational(path_project):
     '''
     Purpose: Combine all statistics that are derived from the `Situational 
         Stats` portion of the CFBStats website into one file.  These files 
@@ -294,11 +307,11 @@ def mergeStatsSituational():
     path_dir = path_project.joinpath('data/interim/CFBStats/ALL/situations')
     
     # Identify all statistical files on record for the team
-    list_game_files = list(path_dir.glob('**/*.csv'))
-    list_game_files.sort()
+    list_files = list(path_dir.glob('**/*.csv'))
+    list_files.sort()
 
     # Identify all years that exist in the data
-    list_temp = [str(x).split('situational')[1] for x in list_game_files]
+    list_temp = [str(x).split('situational')[1] for x in list_files]
     list_years = list(set([x.split('.csv')[0].split(
             '_')[-1] for x in list_temp]))
     list_years.sort()
@@ -310,7 +323,7 @@ def mergeStatsSituational():
         df_off = pd.DataFrame()     # offense
         
         # Find all the files that belong to the given year
-        list_files_year = [x for x in list_game_files if year in str(x)]
+        list_files_year = [x for x in list_files if year in str(x)]
         # Aggregate all files for the given year that exist for each category  
         for path_file in list_files_year:
             
@@ -318,45 +331,52 @@ def mergeStatsSituational():
             df_year = pd.read_csv(path_file)            
             
             # Determine the stat category (and remove `_year` from the end)
-            category = str(path_file).split('situations/')[1].split(
-                    '_situational')[0]
+            filename = str(path_file).split('situations/')[1]
+            if 'passing' in filename:
+                category = 'pass'
+            elif 'rushing' in filename:
+                category = 'rush'
+            else:
+                print('Error: Did not properly categorize file!')
             
             # Find the columns that are unique to the file
-            list_cols = [x not in list_vars_situational for x in list(
-                    df_year.columns)]
-            list_cols = list(set(list(df_year.columns)) - set(
+            list_cols_old = list(set(list(df_year.columns)) - set(
                     list_vars_situational))
             
             # remove spaces and '.' from variable names
-            list_cols_prefix = [x.replace(' ','_').replace(
-                    '.','') for x in list_cols]
-            list_cols_prefix = [category + '_' + x for x in list_cols_prefix]
+            list_cols_new = [x.replace(' ','_').replace(
+                    '.','') for x in list_cols_old]
+            list_cols_new = [category + '_' + x for x in list_cols_new]
             
-            dict_renamed_cols = dict(zip(list_cols, list_cols_prefix))
+            dict_renamed_cols = dict(zip(list_cols_old, list_cols_new))
             df_year = df_year.rename(columns=dict_renamed_cols)
 
             # Check to see what category the file belongs to
             # Offensive-related files
-            if 'offense' in category or 'team' in category:
+            if 'offense' in filename:
                 if len(df_off) == 0:
                     df_off = df_year
-                df_off = df_off.merge(df_year, on=list_vars_situational)
+                else:
+                    df_off = df_off.merge(df_year, on=list_vars_situational)
             # Defensive-related files
-            elif 'defense' in category:
+            elif 'defense' in filename:
                 if len(df_def) == 0:
                     df_def = df_year
-                df_def = df_def.merge(df_year, on=list_vars_situational)
+                else:
+                    df_def = df_def.merge(df_year, on=list_vars_situational)
             # Check for any missed files
             else:
-                print(category)
+                print('Error: Did not properly merge file: ' + filename)
     
         # Export all merged dataframes to a CSV file for that year
-        df_def.to_csv(path_dir.parent.joinpath('merged/situational_offense_' 
-                                               + year + '.csv'), index = False)
-        df_off.to_csv(path_dir.parent.joinpath('merged/situational_defense_' 
-                                               + year + '.csv'), index = False)            
+        df_def.to_csv(path_dir.parent.joinpath(
+                'merged/situations/situational_defense_' 
+                + year + '.csv'), index = False)
+        df_off.to_csv(path_dir.parent.joinpath(
+                'merged/situations/situational_offense_' 
+                + year + '.csv'), index = False)            
 
-def mergeStatsSplit():
+def mergeStatsSplit(path_project):
     '''
     Purpose: Combine all statistics that are derived from the `Split Stats`
         portion of the CFBStats website into one file.  These files contain the
@@ -373,28 +393,138 @@ def mergeStatsSplit():
     # Set the Game Logs path project
     path_dir = path_project.joinpath('data/interim/CFBStats/ALL/splits')
 
+    # Export all merged dataframes to a CSV file for that year
+    df_def.to_csv(path_dir.parent.joinpath('merged/split_defense_' 
+                                           + year + '.csv'), index = False)
+
+def mergeStatsPlayers(path_project):
+    '''
+    Purpose: Combine all statistics that are derived from the `Players`
+        portion of the CFBStats website into one file.  These files contain the
+        `_player_` tag in their name and are located in the `players` subfolder.
+    
+    Input:
+        (1) path_project (pathlib Path): Project directory file path containing
+                the project's files
+        
+    Output:
+        (1) (.csv file) A .csv file for offense, defense and special team 
+                game log statistics
+    '''  
+
+def combineStatsIntoOne(path_folder):
+    '''
+    Purpose: Combine all `merged` statistics into one file for each statistical
+        grouping such that all years are contained within one file
+    
+    Input:
+        (1) path_folder (pathlib Path): Directory file path containing
+                the project's files for all years
+        
+    Output:
+        (1) (.csv file) A single .csv file that contains data for all years
+    '''         
+    # Find every folder in the Data directory
+    list_files = list(path_folder.glob('*.csv'))
+    list_files.sort()
+    
+    # Determine the statistical categories to be combined
+    list_file_categories = list(set(['_'.join(
+            str(x).split('/')[-1].split('_')[:-1]) for x in list_files]))
+    
+    # Set the output folder
+    path_output = pathlib.Path(str(
+            path_folder).split('ALL')[0], 'ALL', 'merged_final')
+    
+    # Iterate over all the statistical categories for which files exist
+    for file_category in tqdm.tqdm(list_file_categories):
+
+        # Create a dataframe for holding all roster information
+        df_all = pd.DataFrame()
+
+        # Iterate over every folder and compile all roster into df_all
+        for file in [x for x in list_files if file_category in str(x)]:
+            df = pd.read_csv(file)
+            df_all = df_all.append(df)
+        
+        # Resest the DataFrame Index
+        df_all = df_all.reset_index()
+        # Drop the old DataFrame Index
+        df_all.drop(['index'], axis=1, inplace=True)
+        # Remove all spaces from column names and replace with a '_'
+        df_all.columns = [x.replace(' ','_') for x in list(df_all.columns)]
+        # Export to a CSV File
+        df_all.to_csv(path_output.joinpath(file_category + '_all.csv'),
+                      index=False)  
+
 #==============================================================================
-# Working Code
+#--- Working Code
 #==============================================================================
 
 # Set the project working directory
 path_project = pathlib.Path(__file__).resolve().parents[2]
 os.chdir(path_project)
 
+#------------------------------------------------------------------------------
 # Identify Raw Data file paths and Statistical Categories
 dict_paths_raw_data, list_stat_folders = identifyRawDataPaths(path_project)
 
 # Verify the required folder structure in `data/interim/CFBStats/ALL` exists
 directoryCheck(list_stat_folders)
 
+
+#------------------------------------------------------------------------------
 # Combine yearly statistics into one file per statistical category
 combineYears(path_project, dict_paths_raw_data)
 
+
+#------------------------------------------------------------------------------
 # Merge all statistics files such that there are combined versions for every
 #   year (e.g. game_defense_2009.csv)
+
+# Game Logs
 mergeStatsGame(path_project)
-mergeStatsSituational()
-mergeStatsSplit()
+
+# Situational Stats
+mergeStatsSituational(path_project)
+
+# Split Stats
+mergeStatsSplit(path_project)
+
+# Player Stats
+mergeStatsPlayers(path_project)
+
+
+#------------------------------------------------------------------------------
+# Combine all `merged` files such that there is one file for all years
+#------------------------------------------------------------------------------
+# Games
+combineStatsIntoOne(path_project.joinpath(
+        'data/interim/CFBStats/ALL/merged/games'))
+
+# Players
+combineStatsIntoOne(path_project.joinpath(
+        'data/interim/CFBStats/ALL/merged/players'))
+
+# Situations
+combineStatsIntoOne(path_project.joinpath(
+        'data/interim/CFBStats/ALL/merged/situations'))
+
+# Splits
+combineStatsIntoOne(path_project.joinpath(
+        'data/interim/CFBStats/ALL/merged/splits'))
+
+# Records
+combineStatsIntoOne(path_project.joinpath(
+        'data/interim/CFBStats/ALL/records'))
+
+# Rosters
+combineStatsIntoOne(path_project.joinpath(
+        'data/interim/CFBStats/ALL/rosters'))
+
+# Schedules
+combineStatsIntoOne(path_project.joinpath(
+        'data/interim/CFBStats/ALL/schedules'))
 
 # Create a master roster list of all players in the database
 #aggregateRosters(path_project)

@@ -6,6 +6,9 @@ Created on Mon Nov 19 15:55:09 2018
 @author: ejreidelbach
 
 :DESCRIPTION:
+    - Reads in all team data contained within `data/raw/CFBStats/', combines
+        it so that all years are contained within one file for each category,
+        and writes the contents to a team's folder in `data/interim/CFBStats`
 
 :REQUIRES:
    
