@@ -18,10 +18,12 @@ Created on Mon Nov 19 15:55:09 2018
 #==============================================================================
 # Package Import
 #==============================================================================
+import builtins
 import os  
 import pandas as pd
 import pathlib
 import tqdm
+from src.data.rename_variables_CFBStats import renameVariables
 
 #==============================================================================
 # Reference Variable Declaration
@@ -225,25 +227,26 @@ def mergeStatsGame(path_project):
         for path_file in list_files_year:
             
             # Import the file
-            df_year = pd.read_csv(path_file)            
-            
+            df_year = pd.read_csv(path_file)
+           
             # Determine the stat category (and remove `_year` from the end)
             category = str(path_file).split('games/')[1].split('.csv')[0][:-5]
             
-            # Determine the category prefix
-            cat_prefix = '_'.join([x for x in category.split('_') if x not in [
-                    'offense', 'defense', 'team', 'opponent','game']])
+            # Determine the stat sub-category by slicing on `_`
+            #   Note:  This method won't work for all variables and requires 
+            #   special handling for the following variables:
+            #   fumble_returns, interceptions, misc._defense, sacks, 
+            #   tackles_for_loss, tackles, turnover_margin
+            if builtins.any(category.split('_')[0] in x for x in 
+                            ['fumble_returns', 'interceptions', 'misc._defense', 
+                             'sacks', 'tackles_for_loss', 'tackles',
+                             'turnover_margin']):
+                sub_category = '_'.join(category.split('_')[:-1])
+            else:
+                sub_category = '_'.join(category.split('_')[:-2])
             
-            # Find the columns that are unique to the file
-            list_cols = [x not in list_vars_game for x in list(df_year.columns)]
-            list_cols = list(set(list(df_year.columns)) - set(list_vars_game))
-            
-            # remove spaces and '.' from variable names
-            list_cols_prefix = [x.replace(' ','_').replace('.','') for x in list_cols]
-            list_cols_prefix = [cat_prefix + '_' + x for x in list_cols_prefix]
-            
-            dict_renamed_cols = dict(zip(list_cols, list_cols_prefix))
-            df_year = df_year.rename(columns=dict_renamed_cols)
+            # Rename the variables in the year DataFrame to match their category
+            df_year = renameVariables(df_year, sub_category)
             
             # Check to see what category the file belongs to
             # Ignore `all_purpose` yards
@@ -281,12 +284,12 @@ def mergeStatsGame(path_project):
                 print(category.split('games/')[1])
     
         # Export all merged dataframes to a CSV file for that year
-        df_def.to_csv(path_dir.parent.joinpath('merged/game_defense_' + year 
-                                               + '.csv'), index = False)
-        df_off.to_csv(path_dir.parent.joinpath('merged/game_offense_' + year 
-                                        + '.csv'), index = False)
-        df_spc.to_csv(path_dir.parent.joinpath('merged/game_special_' + year 
-                                        + '.csv'), index = False)
+        df_def.to_csv(path_dir.parent.joinpath('merged/games/game_defense_' 
+                                               + year + '.csv'), index = False)
+        df_off.to_csv(path_dir.parent.joinpath('merged/games/game_offense_' 
+                                               + year + '.csv'), index = False)
+        df_spc.to_csv(path_dir.parent.joinpath('merged/games/game_special_' 
+                                               + year + '.csv'), index = False)
 
 def mergeStatsSituational(path_project):
     '''
@@ -483,16 +486,16 @@ combineYears(path_project, dict_paths_raw_data)
 #   year (e.g. game_defense_2009.csv)
 
 # Game Logs
-mergeStatsGame(path_project)
+mergeStatsGame(path_project)            # DONE
 
 # Situational Stats
-mergeStatsSituational(path_project)
+mergeStatsSituational(path_project)     # DONE
 
 # Split Stats
-mergeStatsSplit(path_project)
+mergeStatsSplit(path_project)           # Incomplete
 
 # Player Stats
-mergeStatsPlayers(path_project)
+mergeStatsPlayers(path_project)         # Incomplete
 
 
 #------------------------------------------------------------------------------
@@ -500,31 +503,31 @@ mergeStatsPlayers(path_project)
 #------------------------------------------------------------------------------
 # Games
 combineStatsIntoOne(path_project.joinpath(
-        'data/interim/CFBStats/ALL/merged/games'))
+        'data/interim/CFBStats/ALL/merged/games'))      # Incomplete
 
 # Players
 combineStatsIntoOne(path_project.joinpath(
-        'data/interim/CFBStats/ALL/merged/players'))
+        'data/interim/CFBStats/ALL/merged/players'))    # Incomplete
 
 # Situations
 combineStatsIntoOne(path_project.joinpath(
-        'data/interim/CFBStats/ALL/merged/situations'))
+        'data/interim/CFBStats/ALL/merged/situations')) # DONE
 
 # Splits
-combineStatsIntoOne(path_project.joinpath(
-        'data/interim/CFBStats/ALL/merged/splits'))
+combineStatsIntoOne(path_project.joinpath(  
+        'data/interim/CFBStats/ALL/merged/splits'))     # Incomplete
 
 # Records
 combineStatsIntoOne(path_project.joinpath(
-        'data/interim/CFBStats/ALL/records'))
+        'data/interim/CFBStats/ALL/records'))           # DONE
 
 # Rosters
 combineStatsIntoOne(path_project.joinpath(
-        'data/interim/CFBStats/ALL/rosters'))
+        'data/interim/CFBStats/ALL/rosters'))           # DONE
 
 # Schedules
 combineStatsIntoOne(path_project.joinpath(
-        'data/interim/CFBStats/ALL/schedules'))
+        'data/interim/CFBStats/ALL/schedules'))         # DONE
 
 # Create a master roster list of all players in the database
 #aggregateRosters(path_project)
