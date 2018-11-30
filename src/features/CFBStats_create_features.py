@@ -47,7 +47,7 @@ def createRankingVariable():
 
 # Set the project working directory
 path_project = pathlib.Path(__file__).resolve().parents[2]
-path_project = pathlib.Path('/home/ejreidelbach/Projects/cfbAnalysis')
+#path_project = pathlib.Path('/home/ejreidelbach/Projects/cfbAnalysis')
 os.chdir(path_project)
 
 
