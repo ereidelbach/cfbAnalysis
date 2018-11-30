@@ -246,22 +246,27 @@ def aggregateRosters(path_project):
     df_master.to_csv(path_data_interim.joinpath(pathlib.Path(
                     'merged_rosters.csv')), index=False)  
 
-#==============================================================================
-# Working Code
-#==============================================================================
+def aggregate_data_by_team(path_project):
+    '''
+    Purpose: Aggregate all statistical data for every team into .csv files 
+        such that all data for each statistical sub-category is grouped 
+        together in one file per sub-category per team.  
+        These files are located in /data/interim/ based 
+    
+    Input:
+        (1) path_project (pathlib Path): Directory file path of the project
+        
+    Output:
+        (1) (.csv file) A single .csv file that contains data for all years
+    '''    
 
-# Set the project working directory
-path_project = pathlib.Path(__file__).resolve().parents[2]
-os.chdir(path_project)
+    # Step 1. Identify the file paths of the raw data scraped from CFBStats
+    dict_paths_raw_data = identifyRawData(path_project)
 
-# Identify Raw Data
-dict_paths_raw_data = identifyRawData(path_project)
+    # Step 2. Verify the required folder structure in 
+    #           `data/interim/CFBStats/` exists
+    directoryCheck(dict_paths_raw_data)
 
-# Verify the required folder structure in `data/interim/CFBStats/` exists
-directoryCheck(dict_paths_raw_data)
-
-# Combine yearly statistics into one file per statistical category
-combineYears(path_project, dict_paths_raw_data)
-
-# Create a master roster list of all players in the database
-#aggregateRosters(path_project)
+    # Step 3. Combine  statistics into one file per statistical sub-category
+    #           per year and place them in /data/interim/CFBStats
+    combineYears(path_project, dict_paths_raw_data)
