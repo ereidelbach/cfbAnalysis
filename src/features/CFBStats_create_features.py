@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 26 11:15:56 2018
+Created on Fri Nov 30 17:37:18 2018
 
 @author: ejreidelbach
 
@@ -41,15 +41,13 @@ def createRankingVariable():
     # Conference Ranking
     
     # Division Ranking
-    
 #==============================================================================
 # Working Code
 #==============================================================================
 
 # Set the project working directory
+path_project = pathlib.Path(__file__).resolve().parents[2]
 path_project = pathlib.Path('/home/ejreidelbach/Projects/cfbAnalysis')
 os.chdir(path_project)
 
-# Grab data for the Nebraska Cornhuskers
-df = pd.read_csv(pathlib.Path('data/interim/CFBStats/Nebraska/situations' + 
-                              '/passing_offense_situational.csv'))
+
