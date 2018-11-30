@@ -962,33 +962,51 @@ def askUserForScrapeYears():
     else:
         years = ['Select the year you would like to scrape:',
                  '2018', '2017', '2016', '2015', '2014',
-                 '2013', '2012', '2011', '2010', '2009']
+                 '2013', '2012', '2011', '2010', '2009', 'None']
         scrape_year = years[cutie.select(years, caption_indices=[0], 
                                          selected_index=1)]
         print(f'Proceeding to scrape statistics for {scrape_year}')
         
     return scrape_year
 
-#==============================================================================
-# Working Code
-#==============================================================================
-
-# Set the project working directory
-project_dir = pathlib.Path(__file__).resolve().parents[2]
-os.chdir(project_dir)
-
-# Create a dictionary of team names and links and verify all folders exist
-dict_teams = initializeFolderStructure()
-
-# Prompt the user to enter the years that should be scraped
-scrape_year = askUserForScrapeYears()
-
-# Scrape the stats for each team (creating CSV files along the way)
-for team_name, team_url in dict_teams.items():
-    scrapeAllTeamStats(team_name, team_url, scrape_year)
+def scrapeCFBStats(path_project):
+    '''
+    Purpose: Scrape statistical information for all NCAA FBS College Football
+        teams for every year available.  Statistics are output to individual
+        .cvs files for every team, for every sub-category, on a yearly basis.  
+        Because the script prompts the user for input concerning what years 
+        should be scraped, it is possible to quickly update the statistics 
+        for the most current year during each week of the season.
     
-# Scrape the stats for each team (creating CSV files along the way)
-#list_teams = list(dict_teams.keys())
-#for team_name in list_teams[list_teams.index('Georgia Southern'):]:
-#    team_url = dict_teams[team_name]
-#    scrapeAllTeamStats(team_name, team_url)
+    Input:
+        (1) path_project (pathlib Path): Directory file path of the project
+        
+    Output:
+        (1) (.csv file) A multitude of .csv files for every team such that
+                there is 1 file per sub-category per year per team. Files are
+                output to /data/raw/CFBStats/ and placed in their 
+                respective team folders
+    '''    
+    # Step 1. Create a dictionary of team names and file paths while
+    #               simultatenously verifying that all requisite folders exist
+    #               in /data/raw/CFBStats 
+    dict_teams = initializeFolderStructure()
+    
+    # Step 2. Prompt the user to enter the years that should be scraped
+    scrape_year = askUserForScrapeYears()
+    
+    if scrape_year == 'None':
+        print('No year selected -- skipping scraping process')
+        return
+    
+    # Step 3. Scrape the stats for each team (creating CSV files along the way)
+    for team_name, team_url in dict_teams.items():
+        scrapeAllTeamStats(team_name, team_url, scrape_year)
+    
+    # This code is useful in case the user needs to scrape specific teams
+    #   rather than all available teams.
+#    # Scrape the stats for each team (creating CSV files along the way)
+#    list_teams = list(dict_teams.keys())
+#    for team_name in list_teams[list_teams.index('Georgia Southern'):]:
+#        team_url = dict_teams[team_name]
+    #    scrapeAllTeamStats(team_name, team_url)

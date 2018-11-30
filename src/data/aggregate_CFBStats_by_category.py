@@ -668,7 +668,8 @@ def combineStatsIntoOne(path_folder):
                 the project's files for all years
         
     Output:
-        (1) (.csv file) A single .csv file that contains data for all years
+        (1) (.csv file) A single .csv file per category that contains 
+                all sub-category data belonging to that category for all years
     '''         
     # Find every folder in the Data directory
     list_files = list(path_folder.glob('*.csv'))

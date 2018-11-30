@@ -257,7 +257,8 @@ def aggregate_data_by_team(path_project):
         (1) path_project (pathlib Path): Directory file path of the project
         
     Output:
-        (1) (.csv file) A single .csv file that contains data for all years
+        (1) (.csv file) Multiple .csv files that contains data for a specific
+                team for each available sub-category (1 file per year)
     '''    
 
     # Step 1. Identify the file paths of the raw data scraped from CFBStats
