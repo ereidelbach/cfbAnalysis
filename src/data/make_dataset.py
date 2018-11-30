@@ -51,14 +51,9 @@ Created on Fri Nov 30 16:24:32 2018
 import os
 import pathlib
 
-from src.data.scrape_CFBStats import scrapeCFBStats
-from src.data.aggregate_CFBStats_by_team import aggregate_data_by_team
-from src.data.aggregate_CFBStats_by_category import aggregate_data_by_category
-
-#==============================================================================
-# Function Definitions
-#============================================================================== 
-
+from scrape_CFBStats import scrapeCFBStats
+from aggregate_CFBStats_by_team import aggregate_data_by_team
+from aggregate_CFBStats_by_category import aggregate_data_by_category
 
 #==============================================================================
 #--- Working Code

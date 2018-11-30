@@ -23,7 +23,7 @@ import builtins
 import pandas as pd
 import pathlib
 import tqdm
-from src.data.rename_variables_CFBStats import renameVariables
+from rename_variables_CFBStats import renameVariables
 
 #==============================================================================
 # Reference Variable Declaration
