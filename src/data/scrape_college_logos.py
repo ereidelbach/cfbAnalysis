@@ -141,12 +141,12 @@ os.chdir(path_project)
 # Ensure the folder we'll be writing to exists
 directoryCheck()
 
-# Step 1: Scrape conference logos from sportslogos.net
+# Step 1: Scrape bowl logos from sportslogos.net
 url_bowl = ('http://www.sportslogos.net/teams/list_by_league/68/' + 
             'NCAA_Bowl_Games/NCAA_Bowls/logos/')
 scrapeLogos(path_project, url_bowl, 'bowl')
 
-# Step 2: Scrape bowl logos from sportslogos.net
+# Step 2: Scrape conference logos from sportslogos.net
 url_conf = ('http://www.sportslogos.net/teams/list_by_league/153/' + 
             'NCAA_Conferences/NCAA_Conf/logos/')
 scrapeLogos(path_project, url_conf, 'conf')
