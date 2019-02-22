@@ -1000,13 +1000,13 @@ def scrapeCFBStats(path_project):
         return
     
     # Step 3. Scrape the stats for each team (creating CSV files along the way)
-    for team_name, team_url in dict_teams.items():
-        scrapeAllTeamStats(team_name, team_url, scrape_year)
+#    for team_name, team_url in dict_teams.items():
+#        scrapeAllTeamStats(team_name, team_url, scrape_year)
     
     # This code is useful in case the user needs to scrape specific teams
     #   rather than all available teams.
-#    # Scrape the stats for each team (creating CSV files along the way)
-#    list_teams = list(dict_teams.keys())
-#    for team_name in list_teams[list_teams.index('Georgia Southern'):]:
-#        team_url = dict_teams[team_name]
-    #    scrapeAllTeamStats(team_name, team_url)
+    # Scrape the stats for each team (creating CSV files along the way)
+    list_teams = list(dict_teams.keys())
+    for team_name in list_teams[list_teams.index('Florida State'):]:
+        team_url = dict_teams[team_name]
+        scrapeAllTeamStats(team_name, team_url)
