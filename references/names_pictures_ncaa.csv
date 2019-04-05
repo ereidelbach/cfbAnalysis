@@ -148,7 +148,7 @@ Gardner-Webb,Big South,Big South,Bulldogs,WEBB,,,,,,,https://a.espncdn.com/i/tea
 Kennesaw State,Big South,Big South,Owls,KENN,Kennesaw St,Kennesaw St.,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/338.png
 Monmouth,Big South,Big South,Hawks,MONM,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2405.png
 Presbyterian,Big South,Big South,Blue Hose,PRE,Presbyterian College,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2506.png
-Albany,Colonial Athletic,CAA,Great Danes,ALBY,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/399.png
+Albany,Colonial Athletic,CAA,Great Danes,ALBY,Albany (NY),,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/399.png
 Delaware,Colonial Athletic,CAA,Blue Hens,DEL,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/48.png
 Elon,Colonial Athletic,CAA,Phoenix,ELON,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2210.png
 James Madison,Colonial Athletic,CAA,Dukes,JMU,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/256.png
@@ -240,17 +240,17 @@ Incarnate Word,Southland,Southland,Cardinals,IW,,,,,,,https://a.espncdn.com/i/te
 Lamar,Southland,Southland,Cardinals,LAM,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2320.png
 McNeese State,Southland,Southland,Cowboys,MCNS,McNeese,McNeese St.,McNeese St,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2377.png
 Nicholls State,Southland,Southland,Colonels,NICH,Nicholls,Nicholls St.,Nicholls St,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2447.png
-Northwestern State,Southland,Southland,Demons,NWST,Northwestern St.,Northwestern St,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2466.png
+Northwestern State,Southland,Southland,Demons,NWST,Northwestern St.,Northwestern St,NW State (LA),,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2466.png
 Sam Houston State,Southland,Southland,Bearkats,SHSU,Sam Houston St.,Sam Houston St,Sam Houston,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2534.png
 Southeastern Louisiana,Southland,Southland,Lions,SELA,SE Louisiana,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2545.png
 Stephen F. Austin,Southland,Southland,Lumberjacks,SFA,Stephen F Austin,SF Austin,S.F. Austin,S. F. Austin,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2617.png
-Alabama A&M,Southwestern Athletic,SWAC,Bulldogs,AAMU,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2010.png
+Alabama A&M,Southwestern Athletic,SWAC,Bulldogs,AAMU,Arkansas A&M,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2010.png
 Alabama State,Southwestern Athletic,SWAC,Hornets,ALST,Alabama St.,Alabama St,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2011.png
 Alcorn State,Southwestern Athletic,SWAC,Braves,ALCN,Alcorn St.,Alcorn St,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2016.png
 Arkansas-Pine Bluff,Southwestern Athletic,SWAC,Golden Lions,UAPB,AR-Pine Bluff,Ark-Pine Bluff,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2029.png
 Grambling,Southwestern Athletic,SWAC,Tigers,GRAM,Grambling St.,Grambling St,Grambling State,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2755.png
 Jackson State,Southwestern Athletic,SWAC,Tigers,JKST,Jackson St.,Jackson St,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2296.png
-Mississippi Valley State,Southwestern Athletic,SWAC,Delta Devils,MVSU,Mississippi Valley St.,Mississippi Valley St,Miss Valley St,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2400.png
+Mississippi Valley State,Southwestern Athletic,SWAC,Delta Devils,MVSU,Mississippi Valley St.,Mississippi Valley St,Miss Valley St,Miss. Valley St.,Miss. Valley St,Miss. Valley State,https://a.espncdn.com/i/teamlogos/ncaa/500/2400.png
 Prairie View A&M,Southwestern Athletic,SWAC,Panthers,PVAMU,Prairie View,PV A&M,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2504.png
 Southern,Southwestern Athletic,SWAC,Jaguars,SOU,Southern University,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2582.png
 Texas Southern,Southwestern Athletic,SWAC,Tigers,TXSO,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2640.png
@@ -356,3 +356,56 @@ Assumption,,,Greyhounds,,,,,,,,https://cdn.herosports.com/upload/school/school-l
 Ashland,,,Eagles,,,,,,,,https://s3-us-west-2.amazonaws.com/scorestream-team-profile-pictures/274088/20181230190322_469_mascotOrig.png
 Limestone,,,Saints,,,,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/1/1d/Limestone_Saints_logo.svg/1200px-Limestone_Saints_logo.svg.png
 Canisius,,,Golden Griffins,,,,,,,,https://www.canisius.edu/sites/default/files/%2A/logo1_2.png
+Delta St.,,,Statesman,,Delta St,Delta State,,,,,https://upload.wikimedia.org/wikipedia/commons/0/08/Delta_State_Athletics_logo.png
+Cortland St.,,,Red Dragons,,Cortland St,Cortland State,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/f/f7/Cortland_Red_Dragons_Logo.svg/220px-Cortland_Red_Dragons_Logo.svg.png
+Mississippi Delta CC,,,Trojans,,,,,,,,https://nwccrangers.com/images/logos/mississippi%20delta%20logo.png
+Texas A&M-Commerce,,,Lions,,,,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Texas_A%26M%E2%80%93Commerce_Lions_logo.svg/1200px-Texas_A%26M%E2%80%93Commerce_Lions_logo.svg.png
+Northwood,,,Timberwolves,,North (MI),,,,,,https://www.northwood.edu/photos/athletics/athletics-timberwolves.png
+Central State (OH),,,Marauders,,,,,,,,https://maraudersports.com/images/assets/navigation-logo.png
+Pacific,,,Tigers,,,,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/Pacific_Tigers_logo.svg/1200px-Pacific_Tigers_logo.svg.png
+St. Mary's (CA),,,Gaels,,,,,,,,https://a2.espncdn.com/combiner/i?img=%2Fi%2Fteamlogos%2Fncaa%2F500%2F2608.png
+Wisconsin-Stout,,,Blue Devils,,Wisc-Stout,UW-Stout,Wisconsin–Stout,,,,https://cdn.herosports.com/upload/school/school-logo/uw-stout-logo.png
+Wisconsin-Stevens Point,,,Pointers,,Wisc-Stevens Point,UW-Stevens Point,Wisconsin–Stevens Point,,,,https://www.gannett-cdn.com/-mm-/d00b036cfcf85c36462a543aa94a87405177d42c/c=0-38-300-263/local/-/media/2017/02/09/StevensPoint/B9326152297Z.1_20170209001414_000_G0SHBTLFM.1-0.png?width=534&height=401&fit=crop
+DuPage (IL),,,Chaparrals,,,,,,,,https://gochapsgo.com/images/logos/site/site.png
+Harding,,,Bison,,,,,,,,https://cdn.herosports.com/upload/school/school-logo/harding-logo.png
+Morris Brown,,,Wolverins,,,,,,,,https://i.pinimg.com/originals/ac/5a/c3/ac5ac386e7e54f8cf1b6813ce323161a.png
+Geneva,,,Golden Tornadoes,,,,,,,,https://athletics.geneva.edu/images/logos/site/site.png
+Clarion,,,Golden Eagles,,,,,,,,https://clariongoldeneagles.com/images/logos/site/site.png
+McGill (Canada),,,Redmen,,McGill,,,,,,https://upload.wikimedia.org/wikipedia/en/2/28/McGill_Redmen_Logo.png
+Holmes (MS),,,Dogs,,,,,,,,https://www.holmescc.edu/images/news/LogoTrans.png
+Knoxville,,,Bulldogs,,,,,,,,https://s3-us-west-2.amazonaws.com/sportshub2-uploads-prod/files/sites/1088/2019/03/11143558/logo_favicon-150x150.png
+Central Florida CC,,,Patriots,,,,,,,,https://s3-us-west-2.amazonaws.com/scorestream-team-profile-pictures/298916/20190203021110_417_backgroundOrig.png
+Mount San Antonio JC,,,Mounties,,,,,,,,http://cdnak1.psbin.com/logos/rpi/NJCAA0053/wbkb.png
+Tusculum,,,Pioneers,,,,,,,,https://cdn.prestosports.com/action/cdn/logos/rpi/12830/wsoc.png
+Clark (GA),,,Panthers,,Clark Atlanta,,,,,,https://2.bp.blogspot.com/-7ojruoBfJXw/VganPCrzF_I/AAAAAAABJFU/mzZrc2gmV0c/s1600/CAU%2BPanthers%2Blogo.gif
+NE State (OK),,,RiverHawks,,Northeastern State,Northeastern St,Northeastern St.,,,,https://upload.wikimedia.org/wikipedia/en/thumb/0/03/Northeastern_State_RiverHawks_logo.svg/1200px-Northeastern_State_RiverHawks_logo.svg.png
+Bentley College,,,Falcons,,,,,,,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Bentley_Falcons_logo.svg/1200px-Bentley_Falcons_logo.svg.png
+Wheaton,,,Lyons,,,,,,,,https://mir-s3-cdn-cf.behance.net/project_modules/disp/e11c935391449.560cdecbe268b.png
+Wingate,,,Bulldogs,,,,,,,,https://wingatebulldogs.com/images/logos/site/site.png
+St. Augustine's,,,Falcons,,Saint Augustine’s,,,,,,https://cdn.herosports.com/upload/st-augustine's-logo.png
+Cal State-Bakersfield,,,Roadrunners,,UC-Bakersfield,Cal Sate Bakersfield,,,,,https://a4.espncdn.com/combiner/i?img=%2Fi%2Fteamlogos%2Fncaa%2F500%2F2934.png
+Salisbury,,,Seagulls,,,,,,,,https://neo-cdn.stretchinternet.com/KWopPV/header/salisbury3.png
+Southern Connecticut St.,,,Owls,,S. Connecticut St.,Southern Connecticut St,Southern Connecticut State,,,,https://www.logolynx.com/images/logolynx/e0/e00fd1537c232bb043c38ff1643c4667.png
+Stillman,,,Tigers,,Stillman Valley,,,,,,http://www.ssacsports.com/images/school_logos/Stillmanpng.png
+Nebraska-Kearney,,,Lopers,,,,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/6/65/Nebraska%E2%80%93Kearney_Lopers_logo.svg/1200px-Nebraska%E2%80%93Kearney_Lopers_logo.svg.png
+Concordia (Canada),,,Stingers,,Concordia (QB),,,,,,https://upload.wikimedia.org/wikipedia/commons/a/a2/Logotip_Stingers_de_Concordia.png
+John Carroll,,,Blue Streaks,,,,,,,,https://jcusports.com/images/logos/site/site.png
+Manitoba (Canada),,,Bisons,,Manitoba,,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/a/a5/Manitoba_Bisons_Logo.svg/1200px-Manitoba_Bisons_Logo.svg.png
+Albion,,,Britons,,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2790.png
+Catawba,,,Indians,,,,,,,,https://s3-us-west-2.amazonaws.com/scorestream-team-profile-pictures/274185/20190117030220_532_mascotOrig.png
+Boston Univ.,,,Terriers,BU,Boston,,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/1/15/Boston_University_Terriers_logo.svg/1200px-Boston_University_Terriers_logo.svg.png
+Baker,,,Wildcats,,,,,,,,https://upload.wikimedia.org/wikipedia/en/3/3b/Baker_University_Wildcats_logo.png
+Michigan Tech,,,Huskies,,,,,,,,https://clubs.recservices.iastate.edu/baseball/wp-content/uploads/sites/10/2015/11/Michigan-Tech-logo.png
+Findlay,,,Oilers,,,,,,,,https://www.findlay.edu/offices/marketing-communication/brand-guidelines/SiteAssets/Pages/Introduction/Level%201%20Athletics.png
+St. Paul’s (VA),,,Tigers,,St. Paul's,,,,,,https://dumielauxepices.net/sites/default/files/white-tiger-clipart-depauw-822829-6439378.jpg
+West Chester,,,Golden Rams,,,,,,,,https://upload.wikimedia.org/wikipedia/en/e/e4/WCUGoldenRams.PNG
+Bloomsburg,,,Huskies,,,,,,,,https://cdn.herosports.com/upload/uploads/2014/05/bloomsburg-logo.png
+Colorado State-Pueblo,,,ThunderWolves,,Colorado St-Pueblo,Colorado St.-Pueblo,CSU-Pueblo,,,,https://gothunderwolves.com/images/logos/site/site.png
+Mary Hardin-Baylor,,,Crusaders,,,,,,,,https://cdn.herosports.com/upload/school/school-logo/mary-hardin-baylor-logo.png
+Fort Scott (KS),,,Greyhounds,,,,,,,,http://cdnak1.psbin.com/logos/rpi/1328njcaa/sball.png
+William Penn,,,Statesman,,,,,,,,http://d21gd0ap5v1ndt.cloudfront.net/logos/i/2312/250/250.png
+Concordia-St. Paul (MN),,,Golden Bears,,Concordia-St.Paul (MN),Concordia (MN),,,,,https://s3-us-west-2.amazonaws.com/scorestream-team-profile-pictures/274251/20181010232709_476_mascot300.png
+Albany State (GA),,,Golden Rams,,Albany St (GA),Albany St. (GA),,,,,https://www.asurams.edu/images/news/GoldenRams.png
+Fort Hays St.,,,Tigers,,Fort Hays St,Fort Hays State,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Fort_Hays_State_Tigers_logo.svg/1200px-Fort_Hays_State_Tigers_logo.svg.png
+NE Oklahoma A&M,,,Golden Norsemen,,Northeast Oklahoma A&M,,,,,,https://neoathletics.com/images/logos/site/site.png
+West. Washington,,,Vikings,,W Washington,Western Washington,,,,,https://upload.wikimedia.org/wikipedia/en/thumb/6/67/Western_Washington_Vikings_logo.svg/200px-Western_Washington_Vikings_logo.svg.png
