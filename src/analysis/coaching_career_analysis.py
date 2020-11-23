@@ -286,4 +286,4 @@ df_yr_3 = df_coaches[df_coaches['season'] == 3]
 win_pct_sf = float(df_yr_3[df_yr_3['coach'] == 'Scott Frost']['cum_win_pct'])
 
 # Isolate coaches with a winning percentage less than 40%
-df_40 = df_yr_3[df_yr_3['total_win_pct'] < win_pct_sf]
+df_40 = df_yr_3[df_yr_3['cum_win_pct'] < win_pct_sf]
