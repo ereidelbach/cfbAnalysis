@@ -122,7 +122,7 @@ def renameSchool(df, name_var):
         
     return df   
  
-def scrapeNflAllYears(category):
+def scrapeNflPlayersAllYears(category):
     '''
     Purpose: Scrape player stat information for all players for all years
         that is provided by pro-football-reference.com (sports-reference)
@@ -177,14 +177,10 @@ def scrapeNflAllYears(category):
             df_master = df.copy()
         else:
             df_master = df_master.append(df)
-  
-    # Standardize Variables and Formatting of dataframe
-#    df_final = fixCombineInfo(df_master)
-        
-#    return df_final
+            
     return df_master
 
-def scrapeNflSpecificYear(year, category):
+def scrapeNflPlayersSpecificYear(year, category):
     '''
     Purpose: Scrape player stat info for all players for the specified year
         that is provided by pro-football-reference.com (sports-reference)
@@ -219,7 +215,7 @@ def scrapeNflSpecificYear(year, category):
     
     return df_final
 
-def scrapeCfbAllYears(category):
+def scrapeCfbPlayersAllYears(category):
     '''
     Purpose: Scrape player stat information for all players for all years
         that is provided by sports-reference.com
@@ -280,13 +276,8 @@ def scrapeCfbAllYears(category):
             df_master = df_master.append(df)
             
     return df_master
-  
-    # Standardize Variables and Formatting of dataframe
-#    df_final = fixCombineInfo(df_master)
-        
-#    return df_final
 
-def scrapeCfbSpecificYear(year, category):
+def scrapeCfbPlayersSpecificYear(year, category):
     '''
     Purpose: Scrape player stat info for all players for the specified year
         that is provided by sports-reference.com
@@ -301,8 +292,8 @@ def scrapeCfbSpecificYear(year, category):
     
     Outputs
     -------
-        df_master : Pandas DataFrame
-            contains combine information for all players from all scraped years
+        df_year : Pandas DataFrame
+            contains combine information for all players for the specified year
     '''  
     # scrape data for requested year
     url = ('https://www.sports-reference.com/cfb/years/'
@@ -317,11 +308,6 @@ def scrapeCfbSpecificYear(year, category):
     df_year['Year'] = year  
     
     return df_year
-    
-    # Standardize Variables and Formatting of dataframe
-#    df_final = fixCombineInfo(df_year)
-    
-#    return df_final
         
 def fixCombineInfo(df_input):
     '''
@@ -381,52 +367,245 @@ def fixCombineInfo(df_input):
              'DraftPick', 'DraftYear']]
         
     return df
+
+def scrapeCfbSchoolLinks():
+    '''
+    Purpose: Scrapes the names and links to all school pages on CFB reference
+        [https://www.sports-reference.com/cfb/schools/]
+        
+    Inputs
+    ------
+    None.
     
+    Outputs
+    -------
+        df_teams : Pandas DataFrame
+            Contains a table of school information (name / link) for current schools
+    '''   
+    # process all available years
+    year_end = datetime.datetime.now().year
+    
+    # Scrape data for all available years
+    url = 'https://www.sports-reference.com/cfb/schools/'
+    soup = soupifyURL(url)
+        
+    # Test for a year with no data (happens in new year w/o combine)
+    if 'Page Not Found' in str(soup):
+        print('ERROR:  Page not found! Fix the URL in this function.')
+        return
+    
+    # Retrieve the HTML of the combine table
+    table = soup.find('table', {'id':'schools'})
+    
+    # Extract school URLs from the html data
+    url_schools = [[td.a['href'] if td.find('a') else ''
+             for td in row.find_all('td')] for row in table.find_all('tr')]
+    
+    # Remove the first two rows as they apply to headers
+    url_schools = url_schools[2:]
+    url_schools = [x[0] if x != [] else [] for x in url_schools]
+    
+    # Convert the table to a dataframe
+    df_schools = pd.read_html(str(table), flavor = None, header = [1])[0]
+    
+    # Add the URLs to the table
+    df_schools['URL'] = url_schools
+    
+    # Reduce the table to only current schools    
+    df_schools = df_schools[df_schools['To'] == str(year_end)]
+    
+    # Remove unnecessary tables
+    df_schools = df_schools[['School', 'URL', 'From', 'To']]
+            
+    return df_schools
+ 
+def scrapeCfbSchoolsAllYears(year = 1970):
+    '''
+    Purpose: Scrape school data (i.e. teams, wins, losses) by sports-reference.com
+        - also includes coach names and links to coach pages
+        
+    Inputs
+    ------
+        year : int
+            The starting year for evaluating team data (default: 1970)
+    
+    Outputs
+    -------
+        df_history : Pandas DataFrame
+            Contains team information for all schools currently playing
+            football dating back to the default year
+    '''  
+    # retrieve the links to each school
+    df_schools = scrapeCfbSchoolLinks()
+    
+    # create a dataframe for storing coach information for all years
+    df_history = pd.DataFrame()
+    
+    # iterate over each school and scrape their history table
+    for index, row in df_schools.iterrows():
+        school = row['School']
+        url = row['URL']
+        
+        # Scrape data for the specific team
+        url = 'https://www.sports-reference.com' + url
+        soup = soupifyURL(url)
+        
+        # Test for a year with no data (happens in new year w/o combine)
+        if 'Page Not Found' in str(soup):
+            print('ERROR: Data not found for: ' + school)
+            continue
+    
+        # Retrieve the HTML of the combine table
+        table = soup.find('table', {'class':'sortable stats_table'})        
+        
+        # Extract URLs from the html data
+        url_coaches = [[td.a['href'] if td.find('a') else ''
+                 for td in row.find_all('td')] for row in table.find_all('tr')]
+        
+        # Isolate the coach URLs
+        url_coaches = [x[11] if x != [] else [] for x in url_coaches]
+        
+        # Remove the first row as that is the header row
+        url_coaches = url_coaches[1:]
+        
+        # Make the full link to coach URL
+        url_coaches = ['https://www.sports-reference.com' + x if x != [] else [] for x in url_coaches]
+        
+        # Convert the table to a dataframe
+        df_school = pd.read_html(str(table), flavor = None, header = [0])[0]
+        
+        # Add the URLs to the table
+        df_school['url_coach'] = url_coaches
+        
+        # Remove header rows from the table
+        df_school = df_school[df_school['Year'] != 'Year']
+        
+        # Reduce the table to only current schools   
+        df_school['Year'] = pd.to_numeric(df_school['Year'], errors = 'coerce')
+        df_school = df_school[df_school['Year'] >= year]
+        
+        # Add School name to table
+        df_school['Rk'] = school
+        df_school = df_school.rename(columns = {'Rk':'School'})
+        
+        # Append school data to history table
+        if len(df_history) == 0:
+            df_history = df_school.copy()
+        else:
+            df_history = df_history.append(df_school)
+            
+        print('Done with: ' + school)
+        
+        time.sleep(1)
+    
+    return df_history
+
+# def scrapeCfbCoachesAllYears():
+#     '''
+#     Purpose: Scrape coaching data (i.e. teams, wins, losses) by sports-reference.com
+        
+#     Inputs
+#     ------
+#     None.
+    
+#     Outputs
+#     -------
+#         df_coaches : Pandas DataFrame
+#             Contains coaching information for every coach who has led a team 
+#             that is currently playing football dating back to the default year
+#     '''  
+#     # ingest team history with coach info
+#     dir_history = r'C:\Users\reideej1\Projects\a_Personal\cfbAnalysis\data\raw\Team History'
+#     df_schools = pd.read_csv(dir_history + r'\team_history_11_23_2020.csv')
+   
+#     # identify the unique coach/url combos
+#     list_urls = list(df_schools['url_coach'].unique())
+ 
+#     # create a dataframe for storing coach information for all years
+#     df_coaches = pd.DataFrame()    
+ 
+#     # iterate over each school and scrape data for all their coaches
+#     for index, row in df_schools.iterrows():
+        
+#         # Scrape data for the specific team
+#         url = 'https://www.sports-reference.com' + url
+#         soup = soupifyURL(url)
+        
+#         # Test for a year with no data (happens in new year w/o combine)
+#         if 'Page Not Found' in str(soup):
+#             print('ERROR: Data not found for: ' + school)
+#             continue
+    
+#         # Retrieve the HTML of the combine table
+#         table = soup.find('table', {'class':'sortable stats_table'})        
+        
+#         # Extract URLs from the html data
+#         url_coaches = [[td.a['href'] if td.find('a') else ''
+#                  for td in row.find_all('td')] for row in table.find_all('tr')]
+        
+#         # Isolate the coach URLs
+#         url_coaches = [x[11] if x != [] else [] for x in url_coaches]
+        
+#         # Remove the first row as that is the header row
+#         url_coaches = url_coaches[1:]
+        
+#         # Make the full link to coach URL
+#         url_coaches = ['https://www.sports-reference.com' + x if x != [] else [] for x in url_coaches]
+        
+#         # Convert the table to a dataframe
+#         df_school = pd.read_html(str(table), flavor = None, header = [0])[0]
+        
+#         # Add the URLs to the table
+#         df_school['url_coach'] = url_coaches
+        
+#         # Remove header rows from the table
+#         df_school = df_school[df_school['Year'] != 'Year']
+        
+#         # Reduce the table to only current schools   
+#         df_school['Year'] = pd.to_numeric(df_school['Year'], errors = 'coerce')
+#         df_school = df_school[df_school['Year'] >= year]
+        
+#         # Add School name to table
+#         df_school['Rk'] = school
+#         df_school = df_school.rename(columns = {'Rk':'School'})
+        
+#         # Append school data to history table
+#         if len(df_history) == 0:
+#             df_history = df_school.copy()
+#         else:
+#             df_history = df_history.append(df_school)
+            
+#         print('Done with: ' + school)
+        
+#         time.sleep(1)
+    
+#     return df_history
+ 
 #=============================================================================
 # Working Code
 #==============================================================================
 
-# Set the project working directory
-path_dir = pathlib.Path('/home/ejreidelbach/Projects/cfbAnalysis/')
-os.chdir(path_dir)
+# # Set the project working directory
+# path_dir = pathlib.Path('/home/ejreidelbach/Projects/cfbAnalysis/')
+# os.chdir(path_dir)
 
-#--- NFL
-for category in list_categories_nfl:
-    # Scrape Data for all years
-    df_nfl = scrapeNflAllYears(category)
+# #--- NFL
+# for category in list_categories_nfl:
+#     # Scrape Data for all years
+#     df_nfl = scrapeNflPlayersAllYears(category)
     
-    # Write files to disk
-    df_nfl.to_csv(('data/raw/SportsReference/nfl_' + category + '.csv'), 
-                  index = False)
+#     # Write files to disk
+#     df_nfl.to_csv(('data/raw/SportsReference/nfl_' + category + '.csv'), 
+#                   index = False)
 
-#--- CFB
-for category in list_categories_cfb:
-    # Scrape Data for all years
-    df_cfb = scrapeCfbAllYears(category)
+# #--- CFB
+# for category in list_categories_cfb:
+#     # Scrape Data for all years
+#     df_cfb = scrapeCfbPlayersAllYears(category)
     
-    # Write files to disk
-    df_cfb.to_csv(('data/raw/SportsReference/cfb_' + category + '.csv'), 
-                  index = False)
+#     # Write files to disk
+#     df_cfb.to_csv(('data/raw/SportsReference/cfb_' + category + '.csv'), 
+#                   index = False)
 
     # Scrape Data for specific years
     #df = scrapeCombineSpecificYear(2019)    
-
-#------------------------------------------------------------------------------
-['Year',
- 'Player',
- 'Pos',
- 'School',
- 'Ht',
- 'HtInches',
- 'Wt',
- '40yd',
- 'Vertical',
- 'Bench',
- 'Broad Jump',
- '3Cone',
- 'Shuttle',
- 'DraftTeam',
- 'DraftRound',
- 'DraftPick',
- 'DraftYear',
- ]
