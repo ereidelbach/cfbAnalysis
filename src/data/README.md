@@ -7,6 +7,7 @@ College Football Analysis
 
 1. Run scrape_CFBStats.py
 - Scrape data from the CFBStats based on user input (e.g. all available years or a specific year)
+- Ex: "python src\data\scrape_CFBStats.py"
 2. Run aggregate_CFBStats_by_team.py
 - Aggregates all yearly statistics for each team into one file per sub-category per year**
 3. Run aggregate_CFBStats_by_year.py
