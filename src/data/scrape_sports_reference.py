@@ -500,6 +500,129 @@ def scrapeCfbSchoolsAllYears(year = 1970):
     
     return df_history
 
+def scrapeCfbResultsAllYears(year = 1970):
+    '''
+    Purpose: Scrape week-by-week results for all schools from sports-reference.com
+        - also includes coach names and links to coach pages
+        
+    Inputs
+    ------
+        year : int
+            The starting year for evaluating team data (default: 1970)
+    
+    Outputs
+    -------
+        df_history : Pandas DataFrame
+            Contains team information for all schools currently playing
+            football dating back to the default year
+    '''  
+    # retrieve the links to each school
+    df_schools = scrapeCfbSchoolLinks()
+    
+    # # create a dataframe for storing all records for all schools
+    # df_history = pd.DataFrame()
+    
+    # process all available years
+    year_end = datetime.datetime.now().year
+    
+    # iterate over each school and scrape their history table
+    for index, row in df_schools.iterrows():
+        school = row['School']
+        url = row['URL']
+        
+        print(f'*** STARTING SCRAPING: {school} ***')
+        
+        # create a dataframe for storing all records for the specific school
+        df_history_school = pd.DataFrame()
+        
+        for scrape_year in range(year, year_end+1):
+            # Scrape data for the specific team
+            soup = soupifyURL(f'https://www.sports-reference.com{url}{scrape_year}-schedule.html')
+        
+            # Test for a year with no data (happens in new year w/o combine)
+            if 'Page Not Found' in str(soup):
+                print('ERROR: Data not found for: ' + school)
+                continue
+        
+            # Retrieve the HTML of the combine table
+            table = soup.find('table', {'class':'sortable stats_table'})        
+            
+            # Extract URLs from the html data
+            url_games = [[td.a['href'] if td.find('a') else ''
+                     for td in row.find_all('td')] for row in table.find_all('tr')]
+            # Remove the first row as that is the header row
+            url_games = url_games[1:]
+            
+            # Isolate the year URLs
+            url_boxscores = []
+            for line in url_games:
+                url_boxscores.append(line[0])
+            
+            # Make the full link to coach URL
+            url_boxscores = ['https://www.sports-reference.com' + x for x in url_boxscores]
+            
+            # Convert the table to a dataframe
+            df_school = pd.read_html(str(table), flavor = None, header = [0])[0]
+            
+            # find Home/Away and Result columns
+            col_names = [x for x in df_school.columns if 'Unnamed' in x]
+            
+            # Fix Home/Away Column
+            df_school[col_names[0]] = df_school[col_names[0]].apply(lambda x: 'Home' if pd.isna(x) else 
+                                                                   ('Neutral' if x == 'N' else 'Away'))
+            df_school = df_school.rename(columns = {col_names[0]:'Home_Away'})
+            
+            # Fix Result column
+            df_school = df_school.rename(columns = {col_names[1]:'Result'})
+            
+            # Rename other columns
+            df_school = df_school.rename(columns = {'W':'Cum_W', 'L':'Cum_L'})
+            
+            # Create Team and Opp Ranking columns
+            df_school['Rank'] = df_school['School'].apply(lambda x: x.split(')\xa0')[0].replace('(','') if x[0] == '(' else '')
+            df_school['School'] = df_school['School'].apply(lambda x: x.split(')\xa0')[1] if x[0] == '(' in x else x)
+            df_school['Rank_Opp'] = df_school['Opponent'].apply(lambda x: x.split(')\xa0')[0].replace('(','') if x[0] == '(' in x else '')
+            df_school['Opponent'] = df_school['Opponent'].apply(lambda x: x.split(')\xa0')[1] if x[0] == '(' in x else x)
+            
+            # Reorder columns
+            num_cols = [3, 6]
+            if 'Time' in df_school.columns:
+                num_cols = [4, 7]
+            rank_col = df_school.pop('Rank')
+            df_school.insert(num_cols[0], 'Rank', rank_col)
+            rank_opp_col = df_school.pop('Rank_Opp')
+            df_school.insert(num_cols[1], 'Rank_Opp', rank_opp_col)
+            
+            # Add the URLs to the table
+            df_school['url_boxscore'] = url_boxscores
+            
+            # # Append school data to all schools history table
+            # if len(df_history) == 0:
+            #     df_history = df_school.copy()
+            # else:
+            #     df_history = df_history.append(df_school)
+            
+            # Append school data to individual school's history table
+            if len(df_history_school) == 0:
+                df_history_school = df_school.copy()
+            else:
+                df_history_school = df_history_school.append(df_school)
+                
+            print(f' -- Done with: {scrape_year}')
+            
+            time.sleep(1)
+        
+        print(f'*** FINISHED SCRAPING: {school} ***')
+        ts = datetime.date.fromtimestamp(time.time())
+        df_history_school.to_csv(rf'data\raw\Team History\records_{school}_{ts}.csv', index = False)
+        
+    # print('*** DONE WITH ALL SCRAPING ***')
+    # ts = datetime.date.fromtimestamp(time.time())
+    # df_history.to_csv(rf'data\raw\Team History\records_all_schools_{ts}.csv', index = False)    
+    
+    # return df_history
+    return
+
 # def scrapeCfbCoachesAllYears():
 #     '''
 #     Purpose: Scrape coaching data (i.e. teams, wins, losses) by sports-reference.com

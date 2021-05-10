@@ -33,6 +33,7 @@ import pathlib
 import re
 import requests
 from requests.packages.urllib3.util.retry import Retry
+import string
 import tqdm
 from bs4 import BeautifulSoup
 
@@ -375,9 +376,9 @@ def scrapeTeamRosters(team_name, team_url, year_scrape = 'all'):
         # Convert the roster into a pandas dataframe
         df_year = pd.read_html(str(table_roster))[0]
         
-        # Make the first row the column names, then remove the first row
-        df_year.columns = list(df_year.iloc[0])
-        df_year.drop(df_year.index[0], inplace=True)
+        # # Make the first row the column names, then remove the first row
+        # df_year.columns = list(df_year.iloc[0])
+        # df_year.drop(df_year.index[0], inplace=True)
         
         # Add a year column to track the season the roster is for
         df_year['season'] = int(year)
@@ -442,7 +443,8 @@ def scrapeTeamSchedules(team_name, team_url, year_scrape = 'all'):
     dict_years = yearsToScrape(team_url, year_scrape)
     
     # Scrape each year contained in `dict_years`
-    for year, url in tqdm.tqdm(dict_years.items()):       
+    for year, url in tqdm.tqdm(dict_years.items()):     
+        print(f'Scraping {team_name} for year: {year}')
         # Retrieve the HTML data at the specified URL
         soup = soupifyURL('http://www.cfbstats.com' + url)
        
@@ -450,9 +452,9 @@ def scrapeTeamSchedules(team_name, team_url, year_scrape = 'all'):
         df_year = pd.read_html(str(soup.find(
                 'table', {'class':'team-schedule'})))[0] 
         
-        # Make column headers and remove unnecessary rows
-        df_year.columns = list(df_year.iloc[0])
-        df_year.drop(df_year.index[0], inplace=True)
+        # # Make column headers and remove unnecessary rows
+        # df_year.columns = list(df_year.iloc[0])
+        # df_year.drop(df_year.index[0], inplace=True)
   
         # Drop unnecessary footer
         df_year = df_year[df_year['Date'] != str(
@@ -597,15 +599,15 @@ def scrapeTeamStatsSplits(team_name, team_url, year_scrape = 'all'):
             # Make column headers and remove unncessary rows
             # Handle `Place Kicking` Multi-Indexing
             if 'place_kicking' in category:
-                headers = list(df_year.iloc[1])
+                headers = list(df_year.columns.get_level_values(1))
                 headers[2:7] = ['FG_' + x for x in headers[2:7]] # Append FG
                 headers[7:12] = ['XP_' + x for x in headers[7:12]] # Append XP
                 df_year.columns = headers
-                df_year.drop(df_year.index[0:2], inplace=True)
-            # Handle all other Categories
-            else:
-                df_year.columns = list(df_year.iloc[0])
-                df_year.drop(df_year.index[0], inplace=True)
+                # df_year.drop(df_year.index[0:2], inplace=True)
+            # # Handle all other Categories
+            # else:
+            #     df_year.columns = list(df_year.iloc[0])
+            #     df_year.drop(df_year.index[0], inplace=True)
             
             # Convert variable types to numeric
             for col in list(df_year.columns[1:]):
@@ -658,9 +660,17 @@ def scrapeTeamStatsSituational(team_name, team_url, year_scrape = 'all'):
             # Convert the roster into a pandas dataframe
             df_year = pd.read_html(str(table_stat))[0]    
                        
-            # Make column headers and remove unncessary rows
-            df_year.columns = list(df_year.iloc[0])
-            df_year.drop(df_year.index[0], inplace=True)
+            # # Make column headers and remove unncessary rows
+            # df_year.columns = list(df_year.iloc[0])
+            # df_year.drop(df_year.index[0], inplace=True)
+
+            # Drop unnecessary footer
+            df_year = df_year[df_year['Situation'] != str(
+                    '1st: First Downs; 15+: Pass completions of 15 or more ' + 
+                    'yards; 25+: Pass completions of 25 or more yards')]
+            df_year = df_year[df_year['Situation'] != str(
+                    '1st: First Downs; 10+: Rush attempts of 10 or more ' + 
+                    'yards; 20+: Rush attempts of 20 or more yards')]
             
             # Convert variable types to numeric
             for col in list(df_year.columns[1:]):
@@ -671,14 +681,6 @@ def scrapeTeamStatsSituational(team_name, team_url, year_scrape = 'all'):
 
             # Add a year column to track the season the roster is for
             df_year['season'] = int(year)
-            
-            # Drop unnecessary footer
-            df_year = df_year[df_year['Situation'] != str(
-                    '1st: First Downs; 15+: Pass completions of 15 or more ' + 
-                    'yards; 25+: Pass completions of 25 or more yards')]
-            df_year = df_year[df_year['Situation'] != str(
-                    '1st: First Downs; 10+: Rush attempts of 10 or more ' + 
-                    'yards; 20+: Rush attempts of 20 or more yards')]
 
             # Make all column headers lower-case for standardization
             df_year.columns = [x.lower() for x in list(
@@ -725,15 +727,15 @@ def scrapeTeamStatsGameLogs(team_name, team_url, year_scrape = 'all'):
             # Make column headers and remove unncessary rows
             # Handle `Place Kicking` Multi-Indexing
             if 'place_kicking' in category:
-                headers = list(df_year.iloc[1])
+                headers = list(df_year.columns.get_level_values(1))
                 headers[4:7] = ['FG_' + x for x in headers[4:7]] # Append FG
                 headers[7:10] = ['XP_' + x for x in headers[7:10]] # Append XP
                 df_year.columns = headers
-                df_year.drop(df_year.index[0:2], inplace=True)
+                # df_year.drop(df_year.index[0:2], inplace=True)
             # Handle all other Categories
-            else:
-                df_year.columns = list(df_year.iloc[0])
-                df_year.drop(df_year.index[0], inplace=True)
+            # else:
+            #     df_year.columns = list(df_year.iloc[0])
+            #     df_year.drop(df_year.index[0], inplace=True)
 
             # Drop unnecessary footer
             df_year = df_year[df_year['Date'] != str(
@@ -762,7 +764,7 @@ def scrapeTeamStatsGameLogs(team_name, team_url, year_scrape = 'all'):
             df_year.to_csv(pathlib.Path('data/raw/CFBStats').joinpath(
                     team_name, 'games', category + '_' + year + 
                     '.csv'), index = False)
-
+            
 def scrapePlayerStats(team_name, team_url, year_scrape = 'all'):
     '''
     Purpose: Scrape the player statistics for every every available statistical 
@@ -797,20 +799,20 @@ def scrapePlayerStats(team_name, team_url, year_scrape = 'all'):
             df_players = pd.read_html(str(table_stat))[0]    
             
             # Remove the first column as it is a redundant index
-            df_players.drop([0], axis=1, inplace = True)
+            df_players.drop(columns=df_players.columns[0], axis=1, inplace=True)
             
             # Make column headers and remove unncessary rows
             # Handle `Place Kicking` Multi-Indexing
             if 'place_kicking' in category:
-                headers = list(df_players.iloc[1])
+                headers = list(df_players.columns.get_level_values(1))
                 headers[4:9] = ['FG_' + x for x in headers[4:9]] # Append FG
                 headers[9:14] = ['XP_' + x for x in headers[9:14]] # Append XP
                 df_players.columns = headers
-                df_players.drop(df_players.index[0:2], inplace=True)
-            # Handle all other Categories
-            else:
-                df_players.columns = list(df_players.iloc[0])
-                df_players.drop(df_players.index[0], inplace=True)
+                # df_players.drop(df_players.index[0:2], inplace=True)
+            # # Handle all other Categories
+            # else:
+            #     df_players.columns = list(df_players.iloc[0])
+            #     df_players.drop(df_players.index[0], inplace=True)
             
             # Convert variable types to numeric (after `Name`, `Yr`, and `Pos`)
             for col in list(df_players.columns[3:]):
@@ -834,6 +836,162 @@ def scrapePlayerStats(team_name, team_url, year_scrape = 'all'):
             df_players.to_csv(pathlib.Path('data/raw/CFBStats').joinpath(
                     team_name, 'players', category + '_' + year + 
                     '.csv'), index = False) 
+
+def scrapePlayerSituational(team_name, year_scrape = 'all'):
+    '''
+    Purpose: Scrape the passing/rushing situational player statistics for 
+        every player for the specified years.
+        
+    Input:
+        (1) team_name (string): Name of the school being scraped
+        (2) year_scrape (string): Year to be scraped (default: all years)
+    
+    Output:
+        (1) A .csv file containing the scraped information (players/situational_passing_YYYY.csv)
+    '''        
+    # Obtain Team URL given team name
+    team_links = scrapeTeamNames()
+    if team_name in team_links.keys():
+        team_url = team_links[team_name]
+    else:
+        print('Team name not recognized. Please try again.')
+        return
+
+    # Obtain Stat Category links
+    pass_stat_link = team_url.replace('index.html', 'passing/index.html')
+        
+    # Create the dictionary of year(s) to scrape based on user input
+    dict_years = yearsToScrape(pass_stat_link, year_scrape)
+        
+    # Find the URLs for every player's yearly individual stats
+    list_players_url = []
+    for year, url in dict_years.items():
+        
+        # soupify HTML page for given stat category in given year
+        soup = soupifyURL('http://www.cfbstats.com' + url)
+        
+        # Find player URLs in the stat category table for the year
+        table_stat = soup.find('table', {'class':'leaders'})    
+        urls_year = table_stat.findAll('a')
+        for url_player in urls_year:
+            list_players_url.append(url_player['href'])
+            
+    # Scrape Individual Stats for every Year
+    for url in tqdm.tqdm(list_players_url):
+        # soupify HTML page for player's landing page
+        soup = soupifyURL('http://www.cfbstats.com' + url)
+        
+        # retrieve basic player information for the year
+        player_info = soup.find('h1', {'id':'pageTitle'}).text.split('\n')
+    
+        # if player is not a QB, skip them
+        if not any('QB' in s for s in player_info):
+            continue
+        
+        player_year         = url.split('/')[1]
+        player_team         = team_name
+        player_name         = player_info[1].split(' #')[0]
+        player_name_first   = ' '.join(player_name.split(' ')[:-1])
+        player_name_last    = player_name.split(' ')[-1]
+        #----- CLASS & POSITION ------#
+        if len(player_info[2]) == 2:
+            player_class = ''
+            player_position     = player_info[2]
+        else:
+            player_class        = player_info[2].split(' ')[0]
+            player_position     = player_info[2].split(' ')[1]
+        #----- HEIGHT ------#
+        try:
+            player_height    = extractHeightInches(player_info[3].split(' ')[0])
+        except:
+            player_height    = np.nan
+        #----- WEIGHT ------#
+        try:
+            player_weight    = player_info[3].split(' ')[1]
+        except:
+            player_weight    = np.nan                                            
+        #----- HOME TOWN ------#
+        try:
+            player_home_town = ' '.join(player_info[3].split(', ')[0].split(' ')[2:])
+        except:
+            player_home_town = ''
+        #----- HOME STATE ------#
+        try:
+            player_home_state = player_info[3].split(', ')[1]
+        except:
+            player_home_state = ''    
+        
+        # create URLs for stats to scrape [ONLY SCRAPE QB & RB]
+        list_stats_urls = ''
+        if player_position == 'QB':
+            list_stats_urls = [
+                url.replace('index.html', 'passing/split.html'),
+                url.replace('index.html', 'passing/situational.html'),
+                url.replace('index.html', 'rushing/split.html'),
+                url.replace('index.html', 'rushing/situational.html')
+                ]
+        elif player_position == 'RB':
+            list_stats_urls = [
+                url.replace('index.html', 'rushing/split.html'),
+                url.replace('index.html', 'rushing/situational.html')
+                ]
+        else:
+            continue
+                            
+        for url_stat in list_stats_urls:
+            # soupify HTML page for given stat category in given year
+            url_stat_full = 'http://www.cfbstats.com' + url_stat
+            soup = soupifyURL(url_stat_full)
+                        
+            # Find player URLs in the stat category table for the year
+            stats_cat = url_stat.split('.html')[0].split('/')[-2]
+            stats_class = url_stat.split('.html')[0].split('/')[-1]
+            table_stat = soup.find('table', {'class':stats_class})    
+                
+            # Convert HTML data to Pandas DataFrame
+            try:
+                df_stat_yr = pd.read_html(str(table_stat))[0]    
+            except:
+                # print(f'No data found for {player_year} -- {player_name}' +
+                #       f' -- {stats_cat}/{stats_class}')
+                continue                    
+            
+            # Remove notes if they exist in table
+            if ';' in df_stat_yr.iloc[-1][0]:
+                df_stat_yr = df_stat_yr.iloc[:-1]
+            
+            # Convert variable types to numeric (after `Split`)
+            for col in list(df_stat_yr.columns[1:]):
+                # Convert rows with values of '-' to NaN
+                df_stat_yr[col] = df_stat_yr[col].apply(
+                        lambda x: np.nan if x == '-' else float(x))
+
+            # Add player info to the table
+            df_stat_yr['season']    = int(player_year)
+            df_stat_yr['team']      = player_team
+            df_stat_yr['name']      = player_name
+            df_stat_yr['name_first'] = player_name_first
+            df_stat_yr['name_last'] = player_name_last
+            df_stat_yr['class']     = player_class
+            df_stat_yr['position']  = player_position
+            df_stat_yr['height']    = player_height
+            df_stat_yr['weight']    = player_weight
+            df_stat_yr['home_town'] = player_home_town
+            df_stat_yr['home_state'] = player_home_state
+
+            # Make all column headers lower-case for standardization
+            df_stat_yr.columns = [x.lower() for x in list(df_stat_yr.columns)]
+            
+            # Export the newly created Pandas DataFrame to a .csv
+            try:
+                fname = '_'.join([team_name, player_position, player_name.replace(' ',''), 
+                              player_year, stats_cat, stats_class])  + '.csv'
+                outdir = pathlib.Path(f'data/raw/CFBStats/{player_team}/individual')
+                if not os.path.exists(outdir):
+                    os.mkdir(outdir)
+                df_stat_yr.to_csv(outdir.joinpath(fname), index = False) 
+            except:
+                print('Error saving to disk.')
     
 def extractNameFirst(name):
     '''
@@ -947,7 +1105,7 @@ def askUserForScrapeYears():
         
     Output:
         (1) scrape_year (string): Year that the user requests data for 
-            (allowed values are from 2009-2018 or 'all') [default = 'all']
+            (allowed values are from 2009-2020 or 'all') [default = 'all']
     '''
     # Set the default for scraping to all years
     scrape_year = 'all'
@@ -961,7 +1119,7 @@ def askUserForScrapeYears():
         print('Proceeding to scrape all available years.') 
     else:
         years = ['Select the year you would like to scrape:',
-                 '2018', '2017', '2016', '2015', '2014',
+                 '2020', '2019', '2018', '2017', '2016', '2015', '2014',
                  '2013', '2012', '2011', '2010', '2009', 'None']
         scrape_year = years[cutie.select(years, caption_indices=[0], 
                                          selected_index=1)]
@@ -995,18 +1153,23 @@ def scrapeCFBStats(path_project):
     # Step 2. Prompt the user to enter the years that should be scraped
     scrape_year = askUserForScrapeYears()
     
+    print(f'Selected year: {scrape_year}')
+    
     if scrape_year == 'None':
         print('No year selected -- skipping scraping process')
         return
     
     # Step 3. Scrape the stats for each team (creating CSV files along the way)
-#    for team_name, team_url in dict_teams.items():
-#        scrapeAllTeamStats(team_name, team_url, scrape_year)
+    for team_name, team_url in dict_teams.items():
+        scrapeAllTeamStats(team_name, team_url, scrape_year)
     
-    # This code is useful in case the user needs to scrape specific teams
-    #   rather than all available teams.
-    # Scrape the stats for each team (creating CSV files along the way)
-    list_teams = list(dict_teams.keys())
-    for team_name in list_teams[list_teams.index('Florida State'):]:
-        team_url = dict_teams[team_name]
-        scrapeAllTeamStats(team_name, team_url)
+    # # This code is useful in case the user needs to scrape specific teams
+    # #   rather than all available teams.
+    # # Scrape the stats for each team (creating CSV files along the way)
+    # scrape_year = ''
+    # list_teams = list(dict_teams.keys())
+    # for team_name in list_teams[list_teams.index('Florida State'):]:
+    #     team_url = dict_teams[team_name]
+    #     scrapeAllTeamStats(team_name, team_url, scrape_year)
+        
+scrapeCFBStats(os.path.abspath(os.curdir))

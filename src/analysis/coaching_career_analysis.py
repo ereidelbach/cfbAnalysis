@@ -17,6 +17,8 @@ Created on Mon Nov 23 11:46:57 2020
 #==============================================================================
 # Package Import
 #==============================================================================
+import datetime
+import glob
 import os  
 import pandas as pd
 import pathlib
@@ -46,6 +48,14 @@ def create_coach_dataframe(df_schools):
         df_coaches : Pandas DataFrame
             A dataframe containing all historic season data from a coaching perspective
     '''
+    # Create a dictionary that assigns each school to its current conference
+    df_conf = df_schools.groupby(['School', 'Conf']).head(1).groupby('School').head(1).reset_index(drop = True)
+    df_conf = df_conf[['School', 'Conf']]
+    df_conf['Power5'] = df_conf.apply(lambda row: True if row['Conf'] in [
+        'SEC', 'Pac-12', 'Big 12', 'ACC', 'Big Ten'] else False, axis = 1)
+    df_conf = df_conf.set_index('School')
+    dict_conf = df_conf.to_dict(orient = 'index')
+    
     # Create a coaching dataframe by iterating over every year for every school
     list_coaches = []
     for index, row in df_schools.iterrows():
@@ -70,8 +80,9 @@ def create_coach_dataframe(df_schools):
             else:
                 dict_coach_year['bowl'] = True
                 dict_coach_year['bowl_name'] = row['Bowl'].split('-')[0]
-                if row['Bowl'].split('-')[1] == 'W':
-                    dict_coach_year['bowl_win'] = True       
+                if '-' in row['Bowl']:
+                    if row['Bowl'].split('-')[1] == 'W':
+                        dict_coach_year['bowl_win'] = True       
             # handle wins and losses
             if len(coach.split('(')[1].split('-')) > 2:
                 dict_coach_year['W'] = coach.split('(')[1].split('-')[0]
@@ -80,6 +91,9 @@ def create_coach_dataframe(df_schools):
             else:
                 dict_coach_year['W'] = coach.split('(')[1].split('-')[0]
                 dict_coach_year['L'] = coach.split('(')[1].split('-')[1].strip(')')
+            # assign conference information
+            dict_coach_year['conf'] = dict_conf[row['School']]['Conf']
+            dict_coach_year['power5'] = dict_conf[row['School']]['Power5']
             list_coaches.append(dict_coach_year)
             
     # Convert list to DataFrame
@@ -261,13 +275,20 @@ def calculate_year_by_year(df_coaches):
 path_dir = pathlib.Path(r'C:\Users\reideej1\Projects\a_Personal\cfbAnalysis')
 os.chdir(path_dir)
 
-# # Load team history data
-# df_schools = scrapeCfbSchoolsAllYears()
-# df_schools.to_csv(r'data\raw\Team History\team_history_11_23_2020.csv')
+# Load team history data
+df_schools = scrapeCfbSchoolsAllYears()
 
-# Ingest team history with coach info
-dir_history = r'C:\Users\reideej1\Projects\a_Personal\cfbAnalysis\data\raw\Team History'
-df_schools = pd.read_csv(dir_history + r'\team_history_11_23_2020.csv')
+# Load week-by-week records for all schools
+df_results = scrapeCfbResultsAllYears()
+
+# Create week-by-week records for all coaches
+
+# Create timestamp for filename 
+ts = datetime.date.fromtimestamp(time.time())
+df_schools.to_csv(rf'data\raw\Team History\team_history_{ts}.csv', index = False)
+
+# Ingest the most recent team history file
+df_schools = pd.read_csv(max(glob.iglob(r'data\raw\Team History\team_history*.csv'), key=os.path.getmtime))
 
 # Create a dataframe of coaching information given school info
 df_coaches = create_coach_dataframe(df_schools)
@@ -276,14 +297,57 @@ df_coaches = create_coach_dataframe(df_schools)
 #   year-over-year totals for each coach
 df_coaches = calculate_year_by_year(df_coaches)
 
+# Save coaching data to disk
+ts = datetime.date.fromtimestamp(time.time())
+df_coaches.to_csv(rf'data\raw\Coaches\coaching_history_{ts}.csv', index = False)
+
 #------------------------------------------------------------------------------
 # Start of Scott Frost Analysis
 #------------------------------------------------------------------------------
-# Isolate coaches in their 3rd year with more
+# Ingest the most recent coaching history file
+df_coaches = pd.read_csv(max(glob.iglob(r'data\raw\Coaches\coaching_history*.csv'), key=os.path.getmtime))
+
+# Subset the data to coaches in their 3rd year with more
 df_yr_3 = df_coaches[df_coaches['season'] == 3]
 
 # Isolate Scott Frost's Winning %
-win_pct_sf = float(df_yr_3[df_yr_3['coach'] == 'Scott Frost']['cum_win_pct'])
+sf_win_pct = float(df_yr_3[df_yr_3['coach'] == 'Scott Frost']['cum_win_pct'])
+# Isolate Scott Frost's Games Played
+sf_gp = int(df_yr_3[df_yr_3['coach'] == 'Scott Frost']['cum_GP'])
 
-# Isolate coaches with a winning percentage less than 40%
-df_40 = df_yr_3[df_yr_3['cum_win_pct'] < win_pct_sf]
+# Subset the data to coaches have coached at least the same number of games as Scott
+df_yr_3 = df_yr_3[df_yr_3['cum_GP'] >= sf_gp]
+
+# Save coaches with 3 or more years of tenure to disk
+ts = datetime.date.fromtimestamp(time.time())
+df_yr_3.to_csv(rf'data\raw\Coaches\coaching_history_year_3_{ts}.csv', index = False)
+
+# Subset the data to coaches with a winning percentage the same as or worse than Scott
+df_bad = df_yr_3[df_yr_3['cum_win_pct'] < sf_win_pct]
+
+# Save coaches who are as bad as Scott (or worse) to disk
+ts = datetime.date.fromtimestamp(time.time())
+df_bad.to_csv(rf'data\raw\Coaches\coaching_history_bad_{ts}.csv', index = False)
+
+pd.DataFrame.mean(df_bad['total_win_pct'])
+pd.DataFrame.mean(df_bad['total_seasons'])
+
+#------------------------------------------------------------------------------
+# Visualize Results
+#------------------------------------------------------------------------------
+import plotly.graph_objects as go
+import plotly.express as px
+
+# data
+label = ['Coaching Tenures Since 1970','Year 3, 29+ Games Coached','Did Not Last',
+         'Win % >= 40.6','Win % < 40.6', '.500 record or better', 'Worse than .500 record', 'Multiple 10 Top AP Seasons']
+source = [0, 0 ,1, 1, 4, 4, 5]
+target = [1, 2, 3, 4, 5, 6, 7]
+value = [835, 362, 523, 312, 26, 286, 6]
+# data to dict, dict to sankey
+link = dict(source = source, target = target, value = value)
+node = dict(label = label, pad=50, thickness=5)
+data = go.Sankey(link = link, node=node)
+# plot
+fig = go.Figure(data)
+fig.show()
