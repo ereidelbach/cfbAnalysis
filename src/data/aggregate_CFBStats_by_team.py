@@ -63,21 +63,22 @@ def identifyRawData(path_project):
         
         # Loop over every subfolder and add it to the team's dictionary
         for path_subfolder in list_path_subfolder:
-            dict_paths_team[str(path_subfolder).split('/')[-1]] = path_subfolder
+            dict_paths_team[str(path_subfolder).split('\\')[-1]] = path_subfolder
             
         # Add the team's subfolder to the master dictionary
-        dict_paths_all[str(path_team).split('/')[-1]] = dict_paths_team
+        dict_paths_all[str(path_team).split('\\')[-1]] = dict_paths_team
         
     return dict_paths_all
 
-def directoryCheck(dict_paths_all):
+def directoryCheck(path_project, dict_paths_all):
     '''
     Purpose: Run a check of the /data/interim/CFBStats/ folder to see if a 
         folder exists for every team, and its respective subfolders. If 
         a folder is missing, create it.
         
     Input:
-        (1) dict_paths_all (dictionary): Contains a listing of all subfolders
+        (1) path_project (pathlib Path): Directory file path of the project
+        (2) dict_paths_all (dictionary): Contains a listing of all subfolders
                 and paths for each team on file
     
     Output:
@@ -85,14 +86,16 @@ def directoryCheck(dict_paths_all):
     '''
     # Iterate over every team
     for team_name, dict_team in dict_paths_all.items():
-        # Check for the team folder
-        pathlib.Path('data/interim/CFBStats/' + team_name).mkdir(
+        # Check for the team folder        
+        path_project.joinpath('data', 'interim', 'CFBStats', team_name).mkdir(
                 parents=True, exist_ok=True)
         # Iterate over every sub-folder the team possesses
         for category, category_path in dict_team.items():
             # Check for required sub-folders
-            pathlib.Path('data/interim/CFBStats/', team_name, category).mkdir(
+            path_project.joinpath('data', 'interim', 'CFBStats', team_name, category).mkdir(
                     parents=True, exist_ok=True)  
+    
+    return
     
 def combineYears(path_project, dict_paths_all):
     '''
@@ -113,11 +116,10 @@ def combineYears(path_project, dict_paths_all):
                 data for all years
     '''    
     # Loop over every team's folders
-    for team_name, dict_team in dict_paths_all.items():
+    for team_name, dict_team in tqdm.tqdm(dict_paths_all.items()):
         
         # Loop over every category subfolder the team has
-        for category, category_path in tqdm.tqdm(dict_team.items()):
-            
+        for category, category_path in tqdm.tqdm(dict_team.items()):            
             # Identify every statistical category that is stored in the folder
             list_path_files = list(category_path.glob('*.csv'))
             
@@ -128,11 +130,15 @@ def combineYears(path_project, dict_paths_all):
                 writeAggregateStatsToFile(list_path_files, 
                                           category_path, category)
                 
+            # Skip Individual Stats (this script is only team stats)
+            elif category == 'individual':
+                continue
+                
             # Account for the other folders with multiple categores in one
             else:
                 # Identify all unique sub-category names within the folder
                 list_sub_categories = list(set(['_'.join(str(x).split(
-                        '/')[-1].split('_')[:-1]) for x in list_path_files]))
+                        '\\')[-1].split('_')[:-1]) for x in list_path_files]))
     
                 # Iterate over each sub-category 
                 for sub_category in list_sub_categories:
@@ -262,11 +268,12 @@ def aggregate_data_by_team(path_project):
     '''    
 
     # Step 1. Identify the file paths of the raw data scraped from CFBStats
+    # path_project = pathlib.Path(os.path.abspath(os.curdir), 'data', 'raw', 'CFBStats')
     dict_paths_raw_data = identifyRawData(path_project)
 
     # Step 2. Verify the required folder structure in 
     #           `data/interim/CFBStats/` exists
-    directoryCheck(dict_paths_raw_data)
+    directoryCheck(path_project, dict_paths_raw_data)
 
     # Step 3. Combine  statistics into one file per statistical sub-category
     #           per year and place them in /data/interim/CFBStats

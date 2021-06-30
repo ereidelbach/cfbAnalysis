@@ -71,7 +71,7 @@ def identifyRawDataPaths(path_project):
     
     # Identify the types of statistical category/folders
     list_stat_folders = [x for x in list_path_team[0].iterdir() if x.is_dir()]
-    list_stat_folders = [str(x).split('/')[-1] for x in list_stat_folders]
+    list_stat_folders = [str(x).split('\\')[-1] for x in list_stat_folders]
     list_stat_folders.sort()
     
     # Loop over every team's folders
@@ -84,12 +84,12 @@ def identifyRawDataPaths(path_project):
         # Iterate over every file, identify the type of statistic, identify the
         #   year, and add the file to the correct portion of the dictionary
         for path_stat in list_team_files:
-            category = str(path_stat).split('/')[-2]
-            year = str(path_stat).split('/')[-1].split('.csv')[0].split('_')[-1]
+            category = str(path_stat).split('\\')[-2]
+            year = str(path_stat).split('\\')[-1].split('.csv')[0].split('_')[-1]
             
             # Check to make sure there is an actual statistic (not just '2014')
-            if len(str(path_stat).split('/')[-1]) > 8:
-                statistic = '_'.join(str(path_stat).split('/')[-1].split(
+            if len(str(path_stat).split('\\')[-1]) > 8:
+                statistic = '_'.join(str(path_stat).split('\\')[-1].split(
                         '.csv')[0].split('_')[:-1])
             else:
                 statistic = category
@@ -111,38 +111,39 @@ def identifyRawDataPaths(path_project):
 
     return dict_stat_files, list_stat_folders
 
-def directoryCheck(list_stat_folders):
+def directoryCheck(path_project, list_stat_folders):
     '''
     Purpose: Run a check of the /data/interim/CFBStats/ folder to see if a 
         'ALL' folder exists for holding all combined team statistics, and their
         respective subfolders. If a folder is missing, create it.
         
     Input:
-        (1) list_stat_folders (list): Contains a listing of all statistical
+        (1) path_project (pathlib Path): Directory file path of the project
+        (2) list_stat_folders (list): Contains a listing of all statistical
                 categories that exist in the data
     
     Output:
         - NONE
     '''
     # Check for the 'ALL' data folder and create it if not present
-    pathlib.Path('data/interim/CFBStats/' + 'ALL').mkdir(
+    path_project.joinpath('data', 'interim', 'CFBStats', 'ALL').mkdir(
             parents=True, exist_ok=True)
     # Iterate over every statistical sub-folder in the 'ALL' data folder
     for category in list_stat_folders:
         # Check for required sub-folders and create them if not present
-        pathlib.Path('data/interim/CFBStats/ALL', category).mkdir(
+        path_project.joinpath('data', 'interim', 'CFBStats', 'ALL', category).mkdir(
                 parents=True, exist_ok=True)
     # Check for the 'merged' folder and create it if not present
-    pathlib.Path('data/interim/CFBStats/ALL', 'merged').mkdir(
+    path_project.joinpath('data', 'interim', 'CFBStats', 'ALL', 'merged').mkdir(
             parents=True, exist_ok=True)
     # Check for every statistical sub-folder in the `merged` folder and
     #   create it if not present
     for category in list_stat_folders:
         # Check for the recquired sub-folder and create it if not present
-        pathlib.Path('data/interim/CFBStats/ALL/merged', category).mkdir(
+        path_project.joinpath('data', 'interim', 'CFBStats', 'ALL', 'merged', category).mkdir(
                 parents=True, exist_ok=True)        
     # Check for the `merged_final` folder and create it if not present
-    pathlib.Path('data/interim/CFBStats/ALL', 'merged_final').mkdir(
+    path_project.joinpath('data', 'interim', 'CFBStats', 'ALL', 'merged_final').mkdir(
             parents=True, exist_ok=True)
     
 def combineYears(path_project, dict_stat_files):
@@ -174,7 +175,7 @@ def combineYears(path_project, dict_stat_files):
             df_team = pd.read_csv(path_file)
             
             # Add the team name to the dataframe
-            df_team['team'] = str(path_file).split('CFBStats/')[1].split('/')[0]
+            df_team['team'] = str(path_file).split('CFBStats\\')[1].split('\\')[0]
             
             # If the master dataframe is empty, set it to equal this dataframe
             if len(df_stat_year) ==  0:
@@ -209,7 +210,7 @@ def mergeStatsGame(path_project):
     list_game_files.sort()
     
     # Identify all years that exist in the data
-    list_temp = [str(x).split('games/')[1] for x in list_game_files]
+    list_temp = [str(x).split('games\\')[1] for x in list_game_files]
     list_years = list(set([x.split('.csv')[0].split(
             '_')[-1] for x in list_temp]))
     list_years.sort()
@@ -232,7 +233,7 @@ def mergeStatsGame(path_project):
             df_year = pd.read_csv(path_file)
            
             # Determine the stat category (and remove `_year` from the end)
-            category = str(path_file).split('games/')[1].split('.csv')[0][:-5]
+            category = str(path_file).split('games\\')[1].split('.csv')[0][:-5]
             
             # Determine the stat sub-category by slicing on `_`
             #   Note:  This method won't work for all variables and requires 
@@ -339,7 +340,7 @@ def mergeStatsPlayers(path_project):
     list_files.sort()
 
     # Identify all years that exist in the data
-    list_temp = [str(x).split('players/')[1] for x in list_files]
+    list_temp = [str(x).split('players\\')[1] for x in list_files]
     list_years = list(set([x.split('.csv')[0].split(
             '_')[-1] for x in list_temp]))
     list_years.sort()
@@ -361,7 +362,7 @@ def mergeStatsPlayers(path_project):
             df_year = pd.read_csv(path_file)
            
             # Determine the stat category (and remove `_year` from the end)
-            category = str(path_file).split('players/')[1].split('.csv')[0][:-5]
+            category = str(path_file).split('players\\')[1].split('.csv')[0][:-5]
             
             # Determine the stat sub-category
             sub_category = category.split('_player')[0]
@@ -484,7 +485,7 @@ def mergeStatsSituational(path_project):
             df_year = pd.read_csv(path_file)            
             
             # Determine the stat category (and remove `_year` from the end)
-            filename = str(path_file).split('situations/')[1]
+            filename = str(path_file).split('situations\\')[1]
             if 'passing' in filename:
                 category = 'pass'
             elif 'rushing' in filename:
@@ -551,7 +552,7 @@ def mergeStatsSplit(path_project):
     list_files.sort()
 
     # Identify all years that exist in the data
-    list_temp = [str(x).split('splits/')[1] for x in list_files]
+    list_temp = [str(x).split('splits\\')[1] for x in list_files]
     list_years = list(set([x.split('.csv')[0].split(
             '_')[-1] for x in list_temp]))
     list_years.sort()
@@ -573,7 +574,7 @@ def mergeStatsSplit(path_project):
             df_year = pd.read_csv(path_file)
            
             # Determine the stat category (and remove `_year` from the end)
-            category = str(path_file).split('splits/')[1].split('.csv')[0][:-5]
+            category = str(path_file).split('splits\\')[1].split('.csv')[0][:-5]
             
             # Determine the stat sub-category by slicing on `_`
             #   Note:  This method won't work for all variables and requires 
@@ -677,7 +678,7 @@ def combineStatsIntoOne(path_folder):
     
     # Determine the statistical categories to be combined
     list_file_categories = list(set(['_'.join(
-            str(x).split('/')[-1].split('_')[:-1]) for x in list_files]))
+            str(x).split('\\')[-1].split('_')[:-1]) for x in list_files]))
     
     # Set the output folder
     path_output = pathlib.Path(str(
@@ -726,7 +727,7 @@ def aggregate_data_by_category(path_project):
     dict_paths_raw_data, list_stat_folders = identifyRawDataPaths(path_project)
     
     # Verify the required folder structure in `data/interim/CFBStats/ALL` exists
-    directoryCheck(list_stat_folders)
+    directoryCheck(path_project, list_stat_folders)
 
     #--------------------------------------------------------------------------
     # Step 2: Combine yearly statistics into one file per statistical 

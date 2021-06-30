@@ -1068,30 +1068,48 @@ def scrapeAllTeamStats(team_name, team_url, year_scrape = 'all'):
     '''
     # Check to see if the team's directory exists (and if not -> make it)
     directoryCheck(team_name)
+    
+    # # check to see if the team played that year (handles COVID year of 2020)
+    if year_scrape != 'all':
+        # scrape schedule information for the given year
+        soup = soupifyURL('http://www.cfbstats.com' + team_url)
+        # convert schedule information from html to pandas dataframe
+        df_year = pd.read_html(str(soup.find(
+                'table', {'class':'team-schedule'})))[0] 
+        # Drop unnecessary footer
+        df_year = df_year[df_year['Date'] != str(
+                '@ : Away, + : Neutral Site')]
+        
+        # Scrape data if the team played in the given year/season
+        if len(df_year) > 0:
        
-    # Scrape Record (i.e. wins-losses) for every year 
-    scrapeTeamRecords(team_name, team_url, year_scrape)
-    
-    # Scrape Schedule information for every year
-    scrapeTeamSchedules(team_name, team_url, year_scrape)
-
-    # Scrape Rosters for every year
-    scrapeTeamRosters(team_name, team_url, year_scrape)
-    
-    # Scrape Split Statistics for every year
-    scrapeTeamStatsSplits(team_name, team_url, year_scrape)
-
-    # Scrape Situational Statistics for every year
-    scrapeTeamStatsSituational(team_name, team_url, year_scrape)
-
-    # Scrape Statistical Game Logs for every year
-    scrapeTeamStatsGameLogs(team_name, team_url, year_scrape)
-    
-    # Scrape Player Statistics for ever year
-    scrapePlayerStats(team_name, team_url, year_scrape)
-    
-    # Provide a status update
-    print('Done with: ' + team_name)  
+            # Scrape Record (i.e. wins-losses) for every year 
+            scrapeTeamRecords(team_name, team_url, year_scrape)
+            
+            # Scrape Schedule information for every year
+            scrapeTeamSchedules(team_name, team_url, year_scrape)
+        
+            # Scrape Rosters for every year
+            scrapeTeamRosters(team_name, team_url, year_scrape)
+            
+            # Scrape Split Statistics for every year
+            scrapeTeamStatsSplits(team_name, team_url, year_scrape)
+        
+            # Scrape Situational Statistics for every year
+            scrapeTeamStatsSituational(team_name, team_url, year_scrape)
+        
+            # Scrape Statistical Game Logs for every year
+            scrapeTeamStatsGameLogs(team_name, team_url, year_scrape)
+            
+            # Scrape Player Statistics for ever year
+            scrapePlayerStats(team_name, team_url, year_scrape)
+                        
+            # Provide a status update
+            print('Done with: ' + team_name)  
+        else:
+            print(f'{team_name} did not play in {year_scrape}. No data scraped.')
+            
+    return
 
 def askUserForScrapeYears():
     '''

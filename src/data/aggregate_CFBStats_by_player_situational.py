@@ -383,18 +383,52 @@ def create_player_career_stats(df_sit, df_split):
             
     return df_sit_career, df_split_career
 
-def create_files_by_year():
+def create_master_file(path_project):
     '''
-    Purpose: Loop through all team files and make a unique file that inclues
-        (1) all player data and (2) data for every year on record
+    Purpose: Loop through all team files and make a unique file that includes
+        all player data across all years/careers
         
     Input:
-        - NONE
+        - path_project : pathlib Path
+            file path of aggregated individual stats by team 
     
     Output:
         - NONE
     '''
+    #------------- Handle "Split" stats --------------------------------------
+    # grab a list of all files in the directory for "split" stats
+    path_split = path_project.joinpath('split')
+    files_split = os.listdir(path_split)
+    
+    # merge all files into a single file
+    df_split_all = pd.DataFrame()
+    for fname_split in files_split:
+        if len(df_split_all) == 0:
+            df_split_all = pd.read_csv(path_split.joinpath(fname_split))
+        else:
+            df_split_all = df_split_all.append(pd.read_csv(path_split.joinpath(fname_split)))
+    
+    # write csv to disk
+    df_split_all.to_csv(path_project.joinpath('all_years_split.csv'), index = False)    
 
+    #------------- Handle "Situational" stats --------------------------------
+    # grab a list of all files in the directory for "situational" stats
+    path_situational = path_project.joinpath('situational')
+    files_situational = os.listdir(path_situational)
+
+    # merge all files into a single file
+    df_situational_all = pd.DataFrame()
+    for fname_situational in files_situational:
+        if len(df_situational_all) == 0:
+            df_situational_all = pd.read_csv(path_situational.joinpath(fname_situational))
+        else:
+            df_situational_all = df_situational_all.append(pd.read_csv(path_situational.joinpath(fname_situational)))  
+    
+    # write csv to disk
+    df_situational_all.to_csv(path_project.joinpath('all_years_situational.csv'), index = False)     
+    
+    return
+    
 def aggregate_stats():
     '''
     Purpose: Kickoff the process of merging all files for individual players
@@ -421,7 +455,10 @@ def aggregate_stats():
         
         # roll up stats
         roll_up_by_team(path_team)
-    
+        
+    # create files for each year across all teams
+    create_master_file(pathlib.Path(os.path.abspath(os.curdir), 'data', 'processed' 'CFBStats', 'individual'))
+                         
 #==============================================================================
 # Working Code
 #==============================================================================
