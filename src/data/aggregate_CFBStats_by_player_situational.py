@@ -19,6 +19,7 @@ Created on Mon May 10 15:36:24 2021
 #==============================================================================
 # Package Import
 #==============================================================================
+import glob
 import numpy as np
 import os  
 import pandas as pd
@@ -389,15 +390,15 @@ def create_master_file(path_project):
         all player data across all years/careers
         
     Input:
-        - path_project : pathlib Path
-            file path of aggregated individual stats by team 
+        - NONE
     
     Output:
         - NONE
     '''
     #------------- Handle "Split" stats --------------------------------------
     # grab a list of all files in the directory for "split" stats
-    path_split = path_project.joinpath('split')
+    path_split = pathlib.Path(os.path.abspath(os.curdir), 
+                              'data', 'processed', 'CFBStats', 'individual', 'split')
     files_split = os.listdir(path_split)
     
     # merge all files into a single file
@@ -409,11 +410,14 @@ def create_master_file(path_project):
             df_split_all = df_split_all.append(pd.read_csv(path_split.joinpath(fname_split)))
     
     # write csv to disk
-    df_split_all.to_csv(path_project.joinpath('all_years_split.csv'), index = False)    
+    out_fname_split = pathlib.Path(os.path.abspath(os.curdir), 
+                              'data', 'processed', 'CFBStats', 'individual', 'all_years_split.csv')
+    df_split_all.to_csv(out_fname_split, index = False)    
 
     #------------- Handle "Situational" stats --------------------------------
     # grab a list of all files in the directory for "situational" stats
-    path_situational = path_project.joinpath('situational')
+    path_situational = pathlib.Path(os.path.abspath(os.curdir), 
+                              'data', 'processed', 'CFBStats', 'individual', 'situational')
     files_situational = os.listdir(path_situational)
 
     # merge all files into a single file
@@ -425,9 +429,103 @@ def create_master_file(path_project):
             df_situational_all = df_situational_all.append(pd.read_csv(path_situational.joinpath(fname_situational)))  
     
     # write csv to disk
-    df_situational_all.to_csv(path_project.joinpath('all_years_situational.csv'), index = False)     
+    out_fname_sit = pathlib.Path(os.path.abspath(os.curdir), 
+                              'data', 'processed', 'CFBStats', 'individual', 'all_years_situational.csv')
+    df_situational_all.to_csv(out_fname_sit, index = False)     
     
     return
+
+def calculate_rankings():
+    '''
+    Purpose: Loop through the master file for 'situational' and 'split' stats
+        to calculate ranking across a variety of categories within a given year
+            - by conference
+            - by year
+            - by power5 status
+        
+    Input:
+        - NONE
+    
+    Output:
+        - NONE
+    '''
+    path_indiv = pathlib.Path(os.path.abspath(os.curdir), 'data', 'processed', 'CFBStats', 'individual')  
+
+    # import team stats to integrate with individual stats
+    path_team = pathlib.Path(os.path.abspath(os.curdir), 'data', 'processed', 'CFBStats', 'team')
+    files = path_team.glob('*.csv')
+    latest = max(files, key=lambda f: f.stat().st_mtime)
+    df_teams = pd.read_csv(latest)
+
+    # A. Add conference to each player row
+
+    # B. Add Power 5 status to each player row
+
+    # C. Add # of wins to each player row (for the season)
+
+    # D. Add # of losses to each player row (for the season)
+
+    # E. Add bowl status to each player row (for the season)     
+
+    #------------- Handle "Split" stats --------------------------------------
+    df_split = pd.read_csv(path_indiv.joinpath('all_years_split.csv'))
+    
+    # retrieve categories for "split" statistics
+    split_stats = [s for s in list(df_split.columns) if any(xs in s for xs in ['pass', 'rush'])]
+    split_ctg = list(set(df_split['split']))
+    
+    # 1. Rank by year
+    df_split_ranked = pd.DataFrame()
+    print('ranking each situational stat by year')
+    for ctg in tqdm.tqdm(split_ctg):
+        # rank every stat based on the specific category - year combination
+        df_ctg = df_split[df_split['split'] == ctg].copy()
+        for stat in split_stats:
+            ctg_name = 'rank_' + stat
+            df_ctg[ctg_name] = df_ctg.groupby(['season'])[stat].rank(
+                    method='first', ascending=False, na_option='bottom')
+            
+        # add the stats to the master dataframe
+        if len(df_split_ranked) == 0:
+            df_split_ranked = df_ctg.copy()
+        else:
+            df_split_ranked = df_split_ranked.append(df_ctg)
+            
+            
+    # 2. Rank by year and by conference
+    
+    # 3. Rank by year and by Power5 status
+    
+    # 4. Rank all time
+    
+    # 5. Rank all time and by conference
+    
+    # 6. Rank all time and by Power5 status
+      
+    # write csv to disk
+    df_split.to_csv(path_indiv.joinpath('all_years_split_ranked.csv'), index = False)    
+
+    #------------- Handle "Situational" stats --------------------------------
+    df_situational = pd.read_csv(path_indiv.joinpath('all_years_situational.csv'))
+    
+    # retrieve categories for "situational" statistics
+    sit_stats = [s for s in list(df_situational.columns) if any(xs in s for xs in ['pass', 'rush'])]
+    sit_ctg = list(set(df_situational['situation']))
+    
+    # 1. Rank by year
+    
+    # 2. Rank by year and by conference
+    
+    # 3. Rank by year and by Power5 status
+    
+    # 4. Rank all time
+    
+    # 5. Rank all time and by conference
+    
+    # 6. Rank all time and by Power5 status
+      
+    # write csv to disk
+    df_situational.to_csv(path_indiv.joinpath('all_years_situational_ranked.csv'), index = False)    
     
 def aggregate_stats():
     '''
@@ -458,6 +556,9 @@ def aggregate_stats():
         
     # create files for each year across all teams
     create_master_file(pathlib.Path(os.path.abspath(os.curdir), 'data', 'processed' 'CFBStats', 'individual'))
+    
+    # rank each statistic by various categories
+    calculate_rankings(path_project)
                          
 #==============================================================================
 # Working Code
