@@ -491,7 +491,7 @@ def calculate_rankings():
         # rank every stat based on the specific category - year combination
         df_ctg = df_split[df_split['split'] == ctg].copy()
         for stat in split_stats:
-            ctg_name = 'rank_' + stat
+            ctg_name = 'rank_' + stat + '_by_year'
             df_ctg[ctg_name] = df_ctg.groupby(['season'])[stat].rank(
                     method='first', ascending=False, na_option='bottom')
             
@@ -500,9 +500,28 @@ def calculate_rankings():
             df_split_ranked = df_ctg.copy()
         else:
             df_split_ranked = df_split_ranked.append(df_ctg)
+    df_split_ranked = df_split_ranked.reset_index(drop = True)
             
+    # 2. Rank by year and by conference    
+    df_rank = pd.DataFrame()
+    print('ranking each situational stat by year and by conference')
+    for ctg in tqdm.tqdm(split_ctg):
+        # rank every stat based on the specific category - year- conf combination
+        df_ctg = df_split[df_split['split'] == ctg].copy()
+        for stat in split_stats:
+            ctg_name = 'rank_' + stat + '_by_year_and_conf'
+            df_ctg[ctg_name] = df_ctg.groupby(['season', 'conf'])[stat].rank(
+                    method='first', ascending=False, na_option='bottom')
             
-    # 2. Rank by year and by conference
+        # add the stats to the master dataframe
+        if len(df_rank) == 0:
+            df_rank = df_ctg.copy()
+        else:
+            df_rank = df_rank.append(df_ctg)
+    df_rank = df_rank.reset_index(drop = True)
+    df_rank = df_rank[[x for x in df_rank.columns if '_by_year_and_conf' in x]]
+    for col in list(df_rank.columns):
+        df_split_ranked[col] = df_rank[col]
     
     # 3. Rank by year and by Power5 status
     
@@ -567,7 +586,7 @@ def aggregate_stats():
     create_master_file(pathlib.Path(os.path.abspath(os.curdir), 'data', 'processed' 'CFBStats', 'individual'))
     
     # rank each statistic by various categories
-    calculate_rankings(path_project)
+    # calculate_rankings(path_project)
                          
 #==============================================================================
 # Working Code
