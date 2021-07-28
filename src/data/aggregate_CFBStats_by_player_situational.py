@@ -456,19 +456,29 @@ def calculate_rankings():
     files = path_team.glob('*.csv')
     latest = max(files, key=lambda f: f.stat().st_mtime)
     df_teams = pd.read_csv(latest)
-
-    # A. Add conference to each player row
-
-    # B. Add Power 5 status to each player row
-
-    # C. Add # of wins to each player row (for the season)
-
-    # D. Add # of losses to each player row (for the season)
-
-    # E. Add bowl status to each player row (for the season)     
-
-    #------------- Handle "Split" stats --------------------------------------
+    
+    # import "split" and "situational" stats
     df_split = pd.read_csv(path_indiv.joinpath('all_years_split.csv'))
+    df_situational = pd.read_csv(path_indiv.joinpath('all_years_situational.csv'))
+
+    #--- Merge team historic stats with player data to include:
+    #   A. Add conference to each player row
+    #   B. Add Power 5 status to each player row
+    #   C. Add # of wins to each player row (for the season)
+    #   D. Add # of losses to each player row (for the season)
+    #   E. Add bowl status to each player row (for the season)     
+    df_teams = df_teams[['School', 'Year', 'Conf', 'W', 'L', 'T', 'Pct', 'Coach(es)', 'Bowl']]
+    df_teams = df_teams.rename(columns={'School':'team', 'Year':'season',
+        'W':'Team_W', 'L':'Team_L', 'T':'Team_T', 'Pct':'Team_Pct', 'Coach(es)':'Coach'})
+    df_teams.columns = [x.lower() for x in list(df_teams.columns)]
+    df_teams['Power5'] = [True if x in ['ACC', 'Big 12', 'Big Ten', 'Pac-12', 'SEC'] 
+                          else False for x in df_teams['conf']]
+    # merge team data with "split" stats
+    df_split = pd.merge(df_split, df_teams, how='left', on=['season', 'team'])
+    # merge team data with "situational" stats
+    df_situational = pd.merge(df_situational, df_teams, how='left', on=['season', 'team'])
+    
+    #------------- Handle "Split" stats --------------------------------------
     
     # retrieve categories for "split" statistics
     split_stats = [s for s in list(df_split.columns) if any(xs in s for xs in ['pass', 'rush'])]
@@ -506,7 +516,6 @@ def calculate_rankings():
     df_split.to_csv(path_indiv.joinpath('all_years_split_ranked.csv'), index = False)    
 
     #------------- Handle "Situational" stats --------------------------------
-    df_situational = pd.read_csv(path_indiv.joinpath('all_years_situational.csv'))
     
     # retrieve categories for "situational" statistics
     sit_stats = [s for s in list(df_situational.columns) if any(xs in s for xs in ['pass', 'rush'])]
