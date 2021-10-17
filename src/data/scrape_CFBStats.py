@@ -1137,15 +1137,15 @@ def askUserForScrapeYears():
         print('Proceeding to scrape all available years.') 
     else:
         years = ['Select the year you would like to scrape:',
-                 '2020', '2019', '2018', '2017', '2016', '2015', '2014',
-                 '2013', '2012', '2011', '2010', '2009', 'None']
+                 '2021', '2020', '2019', '2018', '2017', '2016', '2015', 
+                 '2014','2013', '2012', '2011', '2010', '2009', 'None']
         scrape_year = years[cutie.select(years, caption_indices=[0], 
                                          selected_index=1)]
         print(f'Proceeding to scrape statistics for {scrape_year}')
         
     return scrape_year
 
-def scrapeCFBStats(path_project):
+def scrapeCFBStats(path_project, scrape_year = ''):
     '''
     Purpose: Scrape statistical information for all NCAA FBS College Football
         teams for every year available.  Statistics are output to individual
@@ -1156,6 +1156,7 @@ def scrapeCFBStats(path_project):
     
     Input:
         (1) path_project (pathlib Path): Directory file path of the project
+        (2) scrape_year (int): Year for which to scrape data [Default: '']
         
     Output:
         (1) (.csv file) A multitude of .csv files for every team such that
@@ -1169,14 +1170,15 @@ def scrapeCFBStats(path_project):
     dict_teams = initializeFolderStructure()
     
     # Step 2. Prompt the user to enter the years that should be scraped
-    scrape_year = askUserForScrapeYears()
-    
-    print(f'Selected year: {scrape_year}')
-    
-    if scrape_year == 'None':
-        print('No year selected -- skipping scraping process')
-        return
-    
+    if scrape_year == '':
+        scrape_year = askUserForScrapeYears()
+        
+        print(f'Selected year: {scrape_year}')
+        
+        if scrape_year == 'None':
+            print('No year selected -- skipping scraping process')
+            return          
+        
     # Step 3. Scrape the stats for each team (creating CSV files along the way)
     for team_name, team_url in dict_teams.items():
         scrapeAllTeamStats(team_name, team_url, scrape_year)
@@ -1190,4 +1192,4 @@ def scrapeCFBStats(path_project):
     #     team_url = dict_teams[team_name]
     #     scrapeAllTeamStats(team_name, team_url, scrape_year)
         
-scrapeCFBStats(os.path.abspath(os.curdir))
+# scrapeCFBStats(os.path.abspath(os.curdir))

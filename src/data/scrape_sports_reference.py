@@ -87,9 +87,7 @@ def renameSchool(df, name_var):
             in the row in the file `school_abbreviations.csv`
     '''  
     # read in school name information
-    df_school_names = pd.read_csv('/home/ejreidelbach/Projects/draft-gem/' +
-                                  'src/static/positionData/' +
-                                  'pics.csv')
+    df_school_names = pd.read_csv('data/raw/school_abbreviations_and_pictures.csv')
      
     # convert the dataframe to a dictionary such that the keys are the
     #   optional spelling of each school and the value is the standardized
@@ -117,10 +115,22 @@ def renameSchool(df, name_var):
         for name_alternate in list_names_nicknames:
             dict_school_names[name_alternate] = name_standardized
             
+    # df[name_var] = df[name_var].apply(
+    #         lambda x: dict_school_names[x] if str(x) != 'nan' else '')
     df[name_var] = df[name_var].apply(
-            lambda x: dict_school_names[x] if str(x) != 'nan' else '')
+            lambda x: rename_school_helper(x, dict_school_names))
         
     return df   
+
+def rename_school_helper(name_school, dict_school_names):
+    try:
+        if str(name_school) != 'nan':
+            return dict_school_names[name_school]
+        else:
+            return ''
+    except:
+        print(f'School not found in school abbreviations .csv file: {name_school} ')
+        return name_school
  
 def scrapeNflPlayersAllYears(category):
     '''
@@ -477,6 +487,14 @@ def scrapeCfbSchoolsAllYears(year = 1970):
         # Add the URLs to the table
         df_school['url_coach'] = url_coaches
         
+        # if the header is in row 0, handle it
+        if df_school.iloc[0,0] == 'Rk':
+            columns = ['Rk', 'Year', 'Conf', 'Overall_W', 'Overall_L', 'Overall_T', 
+                       'Overall_Pct', 'Conf_W', 'Conf_L', 'Conf_T', 'Conf_Pct',
+                       'SRS', 'SOS', 'AP_Pre', 'AP_High', 'AP_Post', 'Coach(es)',
+                       'Bowl', 'Notes', 'url_coach']
+            df_school.columns = columns
+        
         # Remove header rows from the table
         df_school = df_school[df_school['Year'] != 'Year']
         
@@ -622,6 +640,93 @@ def scrapeCfbResultsAllYears(year = 1970):
     
     # return df_history
     return
+
+def scrapeNflDraft(year = ''):
+    '''
+    Purpose: Scrape the NFL draft results for the specified years from sports-reference.com
+        
+    Inputs
+    ------
+        year : int
+            The year to retrieve NFL draft info for (default: 2000 to current year)
+    
+    Outputs
+    -------
+        df_draft : Pandas DataFrame
+            Contains draft information for all specified years
+    '''      
+    if year == '':
+        year_start = 2000
+        year_end = datetime.datetime.now().year
+    else:
+        year_start = year
+        year_end = year
+        
+    # create a dataframe for storing all records for the specific school
+    df_draft = pd.DataFrame()
+    
+    for scrape_year in range(year_start, year_end):
+        # Scrape data for the specific year
+        soup = soupifyURL(f'https://www.pro-football-reference.com/years/{scrape_year}/draft.htm')
+    
+        # Test for a year with no data (happens in new year w/o combine)
+        if 'Page Not Found' in str(soup):
+            print('ERROR: Draft data not found for: ' + scrape_year)
+            continue
+    
+        # Retrieve the HTML of the combine table
+        table = soup.find('table', {'class':'sortable stats_table'})        
+        
+        # Convert HTMl to table
+        df_year = pd.read_html(str(table), flavor = None, header = [0])[0]
+        
+        # Make the first row the column headers
+        df_year.columns = df_year.iloc[0]
+        
+        # Subset the table to columns of interest
+        df_year = df_year[['Rnd', 'Pick', 'Tm', 'Player', 'Pos', 'Age', 'To',
+                           'AP1', 'PB', 'St', 'CarAV', 'DrAV', 'G', 'College/Univ']]
+        
+        # Rename columns
+        df_year.columns = ['Draft_Rnd', 'Draft_Pick_Overall', 'Draft_Team', 
+                           'Player', 'Pos', 'Age', 'Last_Year_NFL', 
+                           'All_Pro', 'Pro_Bowl', 'Starts', 'AV_Career',
+                           'AV_Drafted_Team', 'Games', 'School']
+        
+        # Remove rows with header information
+        df_year = df_year[df_year['Draft_Rnd'] != 'Rnd']
+        
+        # Convert rows to numeric values (if applicable)
+        df_year = df_year.apply(pd.to_numeric, errors = 'ignore')
+            
+        # Standardize School Names
+        df_year = renameSchool(df_year, 'School')
+        
+        # add year column to table
+        df_year['Year'] = scrape_year
+        
+        # reorder columns
+        df_year = df_year[['Year', 'Draft_Rnd', 'Draft_Pick_Overall', 'Player', 
+                   'Draft_Team', 'School', 'Pos', 'Age', 'Last_Year_NFL', 
+                   'All_Pro', 'Pro_Bowl', 'Starts', 'Games', 'AV_Career',
+                   'AV_Drafted_Team']]
+        
+            
+        print(f' -- Done with: {scrape_year}')
+        
+        time.sleep(1)
+        
+        df_year.to_csv(rf'data\raw\NFL Draft\nfl_draft_{scrape_year}.csv', index = False)
+        
+        if len(df_draft) == 0:
+            df_draft = df_year.copy()
+        else:
+            df_draft = df_draft.append(df_year)
+        
+    print('*** DONE WITH ALL SCRAPING ***')
+    df_draft.to_csv(rf'data\raw\NFL Draft\nfl_draft_all_{year_start}_to_{year_end}.csv', index = False)
+    
+    return df_draft
 
 # def scrapeCfbCoachesAllYears():
 #     '''
