@@ -487,6 +487,14 @@ def scrapeCfbSchoolsAllYears(year = 1970):
         # Add the URLs to the table
         df_school['url_coach'] = url_coaches
         
+        # if the header is in row 0, handle it
+        if df_school.iloc[0,0] == 'Rk':
+            columns = ['Rk', 'Year', 'Conf', 'Overall_W', 'Overall_L', 'Overall_T', 
+                       'Overall_Pct', 'Conf_W', 'Conf_L', 'Conf_T', 'Conf_Pct',
+                       'SRS', 'SOS', 'AP_Pre', 'AP_High', 'AP_Post', 'Coach(es)',
+                       'Bowl', 'Notes', 'url_coach']
+            df_school.columns = columns
+        
         # Remove header rows from the table
         df_school = df_school[df_school['Year'] != 'Year']
         
@@ -624,7 +632,7 @@ def scrapeCfbResultsAllYears(year = 1970):
         
         print(f'*** FINISHED SCRAPING: {school} ***')
         ts = datetime.date.fromtimestamp(time.time())
-        df_history_school.to_csv(rf'data\raw\Team History\records_{school}_{ts}.csv', index = False)
+        df_history_school.to_csv(rf'data\raw\Team History\records_{school}_{scrape_year}.csv', index = False)
         
     # print('*** DONE WITH ALL SCRAPING ***')
     # ts = datetime.date.fromtimestamp(time.time())
