@@ -632,7 +632,7 @@ def scrapeCfbResultsAllYears(year = 1970):
         
         print(f'*** FINISHED SCRAPING: {school} ***')
         ts = datetime.date.fromtimestamp(time.time())
-        df_history_school.to_csv(rf'data\raw\Team History\records_{school}_{ts}.csv', index = False)
+        df_history_school.to_csv(rf'data\raw\Team History\records_{school}_{scrape_year}.csv', index = False)
         
     # print('*** DONE WITH ALL SCRAPING ***')
     # ts = datetime.date.fromtimestamp(time.time())

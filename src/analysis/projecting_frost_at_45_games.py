@@ -109,8 +109,62 @@ df_coaches = df_coaches[['Season', 'School', 'Coach', 'Conf', 'Power5', 'Winning
                          'AP_Post_10_count', 'AP_Post_5_count',
                          'Weeks_Ranked', 'Weeks_Ranked_Pct.', 'Tenure_Index']]
 
-# 3. Isolate all FBS coaches since  1971 at their 44th game
-df_subset = df_coaches[df_coaches['G'] == games_sf]
+# 3. Isolate all FBS coaches since  1971 at the end of their 4th season
+df_year_4 = df_coaches[df_coaches['Sn'] == 4]
+# Extract the last-game for each coach at the end of their 4th season
+df_subset = pd.DataFrame()
+for tup, grp in tqdm.tqdm(df_year_4.groupby('Tenure_Index')):
+    if len(df_subset) == 0:
+        df_subset = grp.iloc[[-1],:].copy()
+    else:
+        df_subset = df_subset.append(grp.iloc[[-1],:].copy())
+#------------------------------------------------------------------------------
+# Outcome D. Go 3-1 in final 4 games
+#   - Final record of 6-6, 1 bowl, no winning season, 0, 1 or 2 wins over Top 25 teams
+#------------------------------------------------------------------------------
+df_match_frost = df_subset[(df_subset['Win_Pct'] <= .41) &
+                           (df_subset['Bowl_G'] <= 1) & 
+                           (df_subset['W_vs_Rank'] <= 2) &
+                           (df_subset['Winning_Sns'] == 0)]
+
+# Extract final end-of-tenure stats for each coach (i.e. final season)
+df_match = df_coaches[df_coaches['Tenure_Index'].isin(list(df_match_frost['Tenure_Index']))]
+df_last_sn = pd.DataFrame()
+idx_tenure = 0;
+for tup, grp in tqdm.tqdm(df_match.groupby(['School', 'Coach'])):
+    if len(df_last_sn) == 0:
+        df_last_sn = grp.iloc[[-1],:].copy()
+    else:
+        df_last_sn = df_last_sn.append(grp.iloc[[-1],:].copy())
+df_p5 = df_last_sn[df_last_sn['Power5'] == True]
+        
+print('Outcome C: 2-2 in final 4 games')
+print(f'Total Coaches: {len(df_last_sn)}')
+print(f'Total FBS Coaches: {df_last_sn.Power5.value_counts()[1]}')
+print(f'Median Tenure: {df_last_sn.Sn.median()}')
+print(f'Median Games Coached: {df_last_sn.G.median()}')
+print(f'Total Coaches with Winning Seasons: {df_last_sn.Winning_Sns.ge(1).sum()}')
+print(f'Total Coaches with Bowl Games: {df_last_sn.Bowl_G.ge(1).sum()}')
+print(f'Total Coaches with Teams Ranked in Post-Season AP Top 25: {df_last_sn.AP_Post_25_count.ge(1).sum()}')
+print(f'Total Coaches with Teams Ranked in Post-Season AP Top 10: {df_last_sn.AP_Post_10_count.ge(1).sum()}')
+   
+'''
+    The six coaches who ever had a team finish in the AP Top 25    
+        - Ron Meyer at SMU (only coach with a top 10 finish)
+            * last coached in 1981
+            * program was on suspension and later received the death penalty
+        - Mike Neu at Ball St. (Active)
+        - David Cutcliffe at Duke (Active) 
+        - Lee Corse at Indiana (last year at school: 1982)
+        - Dan McCarney at Iowa State (last year at school: 2006)
+        - Greg Schanio at Rutgers (tenure that ended in 2011)
+        
+    Ron Meyer had 2 teams finish in the Top 25, the rest only did it 1 time
+    
+    Only 1 coach had a team ranked in the preseason Top 25 
+        * the 1 year they also finished ranked in the postseason Top 25
+'''
+
 
 #------------------------------------------------------------------------------
 # Outcome A. Go 0-4 in final 4 games
@@ -262,7 +316,11 @@ for tup, grp in tqdm.tqdm(df_match.groupby(['School', 'Coach'])):
     else:
         df_last_sn = df_last_sn.append(grp.iloc[[-1],:].copy())
         
+<<<<<<< HEAD
 print('Outcome C: 2-2 in final 4 games')
+=======
+print('Outcome D: 3-1 in final 4 games')
+>>>>>>> cad461064c4abc0337572911242823e11ab1910a
 print(f'Total Coaches: {len(df_last_sn)}')
 print(f'Total FBS Coaches: {df_last_sn.Power5.value_counts()[1]}')
 print(f'Median Tenure: {df_last_sn.Sn.median()}')
@@ -307,7 +365,11 @@ for tup, grp in tqdm.tqdm(df_match.groupby(['School', 'Coach'])):
     else:
         df_last_sn = df_last_sn.append(grp.iloc[[-1],:].copy())
         
+<<<<<<< HEAD
 print('Outcome C: 2-2 in final 4 games')
+=======
+print('Outcome E: 4-0 in final 4 games')
+>>>>>>> cad461064c4abc0337572911242823e11ab1910a
 print(f'Total Coaches: {len(df_last_sn)}')
 print(f'Total FBS Coaches: {df_last_sn.Power5.value_counts()[1]}')
 print(f'Median Tenure: {df_last_sn.Sn.median()}')

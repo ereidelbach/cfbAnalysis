@@ -95,7 +95,11 @@ Utah St.,Mountain West,MWC,FALSE,Aggies,USU,Utah St,Utah State,,,,,,https://a.es
 Wyoming,Mountain West,MWC,FALSE,Cowboys,WYO,,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2751.png,811,5486
 Arizona,Pac 12,Pac-12,TRUE,Wildcats,ARIZ,,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/12.png,29,905
 Arizona St.,Pac 12,Pac-12,TRUE,Sun Devils,ASU,Arizona St,Arizona State,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/9.png,28,905
+<<<<<<< HEAD
+California,Pac 12,Pac-12,TRUE,Golden Bears,CAL,Cal,University of California,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/25.png,107,905
+=======
 California,Pac 12,Pac-12,TRUE,Golden Bears,CAL,Cal,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/25.png,107,905
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
 Colorado,Pac 12,Pac-12,TRUE,Buffaloes,COLO,,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/38.png,157,905
 Oregon,Pac 12,Pac-12,TRUE,Ducks,ORE,UO,,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/2483.png,529,905
 Oregon St.,Pac 12,Pac-12,TRUE,Beavers,ORST,Oregon St,Oregon State,,,,,,https://a.espncdn.com/i/teamlogos/ncaa/500/204.png,528,905

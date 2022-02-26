@@ -20,6 +20,7 @@ Created on Mon Nov 19 15:55:09 2018
 # Package Import
 #==============================================================================
 import builtins
+import os
 import pandas as pd
 import pathlib
 import tqdm
@@ -797,3 +798,5 @@ def aggregate_data_by_category(path_project):
     # Schedules
     combineStatsIntoOne(path_project.joinpath(
             'data/interim/CFBStats/ALL/schedules'))
+    
+aggregate_data_by_category(pathlib.Path(os.path.abspath(os.curdir)))

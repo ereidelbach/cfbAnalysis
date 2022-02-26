@@ -59,7 +59,14 @@ def function_name(var1, var2):
 # scrapeCFBStats(path_project, 2021)
 
 # # aggregate data across all teams
+<<<<<<< HEAD
+aggregate_data_by_team(path_project)
+    
+# aggregate data for all player stats
+# aggregate_data_by_category(path_project)
+=======
 # aggregate_data_by_team(path_project)
     
 # aggregate data for all player stats
 aggregate_data_by_category(path_project)
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
