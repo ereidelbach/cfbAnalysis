@@ -36,6 +36,74 @@ from src.data.scrape_sports_reference import *
 # Function Definitions
 #==============================================================================
 def renameSchool(df, name_var):
+<<<<<<< HEAD
+=======
+    '''
+    Purpose: Rename a school/university to a standard name as specified in 
+        the file `school_abbreviations.csv`
+
+    Inputs
+    ------
+        df : Pandas Dataframe
+            DataFrame containing a school-name variable for which the names
+            need to be standardized
+        name_var : string
+            Name of the variable which is to be renamed/standardized
+    
+    Outputs
+    -------
+        list(row)[0] : string
+            Standardized version of the school's name based on the first value
+            in the row in the file `school_abbreviations.csv`
+    '''  
+    # read in school name information
+    df_school_names = pd.read_csv(r'references\names_pictures_ncaa.csv')
+     
+    # convert the dataframe to a dictionary such that the keys are the
+    #   optional spelling of each school and the value is the standardized
+    #   name of the school
+    dict_school_names = {}
+    
+    for index, row in df_school_names.iterrows():
+        # isolate the alternative name columns
+        names = row[[x for x in row.index if 'Name' in x]]
+        # convert the row to a list that doesn't include NaN values
+        list_names = [x for x in names.values.tolist() if str(x) != 'nan']
+        # add the nickname to the team names as an alternative name
+        nickname = row['Nickname']
+        list_names_nicknames = list_names.copy()
+        for name in list_names:
+            list_names_nicknames.append(name + ' ' + nickname)
+        # extract the standardized team name
+        name_standardized = row['Team']
+        # add the standardized name
+        list_names_nicknames.append(name_standardized)
+        # add the nickname to the standardized name
+        list_names_nicknames.append(name_standardized + ' ' + nickname)
+        # for every alternative spelling of the team, set the value to be
+        #   the standardized name
+        for name_alternate in list_names_nicknames:
+            dict_school_names[name_alternate] = name_standardized
+            
+    # df[name_var] = df[name_var].apply(
+    #         lambda x: dict_school_names[x] if str(x) != 'nan' else '')
+    df[name_var] = df[name_var].apply(
+            lambda x: rename_school_helper(x, dict_school_names))
+        
+    return df   
+
+def rename_school_helper(name_school, dict_school_names):
+    try:
+        if str(name_school) != 'nan':
+            return dict_school_names[name_school]
+        else:
+            return ''
+    except:
+        print(f'School not found in school abbreviations .csv file: {name_school} ')
+        return name_school
+    
+def create_coach_dataframe(df_schools):
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
     '''
     Purpose: Rename a school/university to a standard name as specified in 
         the file `school_abbreviations.csv`
@@ -384,6 +452,7 @@ def create_week_by_week_dataframe(df_all_games, df_schools, games_sf):
     
     # Break out coaches on a week-by-week basis
     list_coaches = []
+<<<<<<< HEAD
     table_coaches = pd.DataFrame(columns = ['School', 'Year', 'Coach', 'Games'])
     for school, grp in tqdm.tqdm(df_coaches.groupby(['School', 'Year'])):
         dict_coaches = {}
@@ -430,6 +499,54 @@ def create_week_by_week_dataframe(df_all_games, df_schools, games_sf):
         if not pd.isna(row['Coach(es)']):
             if row['Coach'] not in row['Coach(es)']:
                 print(f"{row['Coach']} not found in {row['Coach(es)']}")
+=======
+    for index, row in df_schools.iterrows():
+        # handle every coach that coached that season
+        for coach in row['Coach(es)'].split(', '):
+            dict_coach_year = {}
+            dict_coach_year['coach'] = coach.split(' (')[0].strip()
+            dict_coach_year['year'] = row['Year']
+            dict_coach_year['school'] = row['School']
+            dict_coach_year['ranking_pre'] = row['AP_Pre']
+            dict_coach_year['ranking_high'] = row['AP_High']
+            dict_coach_year['ranking_post'] = row['AP_Post']
+            dict_coach_year['ranked_pre'] = not pd.isna(row['AP_Pre'])
+            dict_coach_year['ranked_post'] = not pd.isna(row['AP_Post'])
+            try:
+                dict_coach_year['ranked_top_10'] = row['AP_Post'] <= 10
+            except:
+                print(row['AP_Post'])                    
+            dict_coach_year['ranked_top_5'] = row['AP_Post'] <= 5
+            # handle bowl games
+            if pd.isna(row['Bowl']):
+                dict_coach_year['bowl'] = False
+                dict_coach_year['bowl_name'] = ''
+                dict_coach_year['bowl_win'] = False
+            else:
+                dict_coach_year['bowl'] = True
+                dict_coach_year['bowl_name'] = row['Bowl'].split('-')[0]
+                if '-' in str(row['Bowl']):
+                    try:
+                        if row['Bowl'].split('-')[1] == 'W':
+                            dict_coach_year['bowl_win'] = True       
+                    except:
+                        print(row['Bowl'])
+            # handle wins and losses
+            if len(coach.split('(')[1].split('-')) > 2:
+                dict_coach_year['W'] = coach.split('(')[1].split('-')[0]
+                dict_coach_year['L'] = coach.split('(')[1].split('-')[1].strip(')')
+                dict_coach_year['T'] = coach.split('(')[1].split('-')[2].strip(')')
+            else:
+                dict_coach_year['W'] = coach.split('(')[1].split('-')[0]
+                dict_coach_year['L'] = coach.split('(')[1].split('-')[1].strip(')')
+            # assign conference information
+            dict_coach_year['conf'] = dict_conf[row['School']]['Conf']
+            dict_coach_year['power5'] = dict_conf[row['School']]['Power5']
+            list_coaches.append(dict_coach_year)
+            
+    # Convert list to DataFrame
+    df_coaches = pd.DataFrame(list_coaches)
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
     
     # add power5 status to dataframe
     df_school_info = pd.read_csv(r'references\names_pictures_ncaa.csv')
@@ -618,6 +735,7 @@ def engineer_stint_features(df_tenure, games_sf):
     # 2. Total wins
     df_tenure['W'] = df_tenure.Result.eq('W').cumsum()
     
+<<<<<<< HEAD
     # 3. Total losses
     df_tenure['L'] = df_tenure.Result.eq('L').cumsum()
     
@@ -680,6 +798,16 @@ def engineer_stint_features(df_tenure, games_sf):
         else:
             list_top25_results.append('')
     df_tenure['Result_Top25_Opp'] = list_top25_results
+=======
+    #   6. Cumulative Win Pct at school (on a year-by-year basis)
+    if len(df_coach) == 1:
+        if int(df_coach['cum_GP']) == 0:
+            df_coach['cum_win_pct'] = 0
+        else:
+            df_coach['cum_win_pct'] = df_coach.apply(lambda row: row['cum_W'] / row['cum_GP'] if row['cum_GP'] != 0 else 0, axis = 1)
+    else:
+        df_coach['cum_win_pct'] = df_coach.apply(lambda row: row['cum_W'] / row['cum_GP'] if row['cum_GP'] != 0 else 0, axis = 1)
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
     
     # 13. Games vs AP Top-25
     df_tenure['G_vs_Rank'] = df_tenure.Result_Top25_Opp.ne('').cumsum()
@@ -1103,6 +1231,552 @@ def scrape_and_compile_coaching_data(scrape_year):
     
     return
     
+<<<<<<< HEAD
+=======
+    return df_yr_by_yr
+
+def create_week_by_week_dataframe(df_all_games, df_schools, games_sf):
+    '''
+    Purpose: Combine the week-by-week results for each school with the 
+        end-of-year school/coach information to create a week-by-week 
+        dataframe detailing who coached each team when. This will facilitate
+        analysis of coaching tenures.
+
+    Inputs   
+    ------
+        df_all_games : Pandas DataFrame
+            Contains week-by-week results for each school
+        df_schools : Pandas DataFrame
+            Contains year-by-year results for each school (with coaches' names)
+        games_sf : int
+            Scott Frost's current number of games
+            
+    Outputs
+    -------
+        df_engineered : Pandas DataFrame
+            A dataframe containing all historic week-by-week results infused
+                with coaches' names
+    '''           
+    # standardize team names
+    df_all_games = renameSchool(df_all_games, 'School')
+    df_all_games = renameSchool(df_all_games, 'Opponent')
+    df_schools   = renameSchool(df_schools, 'School')
+    
+    # merge data together
+    df_coaches = pd.merge(df_all_games, 
+                          df_schools[['School', 'Year', 'Conf', 'Conf_W', 'Conf_L', 
+                                      'Conf_T', 'AP_Pre', 'AP_High', 'AP_Post', 
+                                      'Coach(es)', 'Bowl']],
+                          how = 'left',
+                          on = ['School', 'Year'])
+    
+    # rename columns
+    df_coaches = df_coaches.rename(columns = {'Conf_x':'Conf_Opp', 'Conf_y':'Conf'})
+    
+    # sort dataframe to ensure no issues with groupby
+    df_coaches = df_coaches.sort_values(by = ['School', 'Year', 'G'])
+    
+    # Break out coaches on a week-by-week basis
+    list_coaches = []
+    table_coaches = pd.DataFrame(columns = ['School', 'Year', 'Coach', 'Games'])
+    for school, grp in tqdm.tqdm(df_coaches.groupby(['School', 'Year'])):
+        dict_coaches = {}
+        # Handle Utah 2003
+        if school[0] == 'Utah' and school[1] == 2004:
+            dict_coaches['Urban Meyer'] = 12
+        # Handle Utah St. 2021
+        elif school[0] == 'Utah St.' and school[1] == 2021:
+            coach_name = 'Blake Anderson'
+            coach_games = grp['G'].count()
+            dict_coaches[coach_name] = coach_games
+        # Handle USC 2021
+        elif school[0] == 'USC' and school[1] == 2021:
+            dict_coaches['Clay Helton'] = 2
+            dict_coaches['Donte Williams'] = len(grp) - 2
+        # handle every coach that coached that season for that team
+        else:
+            # for every coach a team has, calculate how many games they coached that season
+            for coach in grp['Coach(es)'].iloc[0].split(', '):
+                coach_name = coach.split(' (')[0]
+                coach_record = coach.split(' (')[1].replace(')','')
+                # first attempt to account for ties in a coaches' record
+                try:
+                    coach_games = int(coach_record.split('-')[0]) + int(coach_record.split('-')[1]) + int(coach_record.split('-')[2])
+                # otherwise assume they only have wins-losses in their record
+                except:
+                    coach_games = int(coach_record.split('-')[0]) + int(coach_record.split('-')[1])
+                dict_coaches[coach_name] = coach_games
+        # add coaches to master list
+        num_games = 0
+        for coach in dict_coaches.keys():
+            list_coaches = list_coaches + ([coach] * dict_coaches[coach])
+            table_coaches = table_coaches.append(pd.DataFrame(
+                [[school[0], school[1], coach, dict_coaches[coach]]], 
+                columns = ['School', 'Year', 'Coach', 'Games']))
+            num_games = dict_coaches[coach] + num_games
+        if num_games != len(grp):
+            print('oops!')
+            break
+    df_coaches['Coach'] = list_coaches  
+    
+    # test for any values of "coach" that weren't in the original data
+    for index, row in tqdm.tqdm(df_coaches.iterrows()):
+        if not pd.isna(row['Coach(es)']):
+            if row['Coach'] not in row['Coach(es)']:
+                print(f"{row['Coach']} not found in {row['Coach(es)']}")
+    
+    # add power5 status to dataframe
+    df_school_info = pd.read_csv(r'references\names_pictures_ncaa.csv')
+    df_school_info = df_school_info.rename(columns = {'Team':'School'})
+    df_coaches = pd.merge(df_coaches, df_school_info[['School', 'Power5']], how = 'left', on = 'School')
+    df_school_info = df_school_info.rename(columns = {'School':'Opponent', 'Power5':'Power5_Opp'})
+    df_coaches = pd.merge(df_coaches, df_school_info[['Opponent', 'Power5_Opp']], how = 'left', on = 'Opponent')
+    
+    # rename columns    
+    df_coaches = df_coaches.rename(columns = {'G':'Week',
+                                              'Year':'Season',
+                                              'Opp':'Pts_Opp',
+                                              'Cum_W':'W_Sn',
+                                              'Cum_L':'L_Sn',
+                                              'T':'T_Sn'})
+    
+    # add opponent's record for the year to the table
+    df_team_records = pd.merge(df_coaches[['Season', 'Opponent']], 
+                               df_schools[['School', 'Year', 'Overall_Pct', 'Conf_Pct']],
+                               left_on = ['Season', 'Opponent'],
+                               right_on = ['Year', 'School'])
+    df_team_records = df_team_records.drop_duplicates()
+    df_team_records = df_team_records[['Season', 'School', 'Overall_Pct', 'Conf_Pct']]
+    df_team_records = df_team_records.rename(columns = {'Overall_Pct':'Win_Pct_Opp',
+                                                        'Conf_Pct':'Win_Pct_Conf_Opp',
+                                                        'School':'Opponent'})
+    df_coaches = pd.merge(df_coaches, df_team_records, how = 'left', on = ['Season', 'Opponent'])
+    
+    # add flag if opponent's overall record was > .500
+    df_coaches['Opp_Winning_Record'] = list(df_coaches.apply(
+        lambda row: True if row['Win_Pct_Opp'] > .5 else False, axis = 1))
+    
+    # add flag if opponent's conference record was > .500
+    df_coaches['Opp_Conf_Winning_Record'] = list(df_coaches.apply(
+        lambda row: True if row['Win_Pct_Conf_Opp'] > .5 else False, axis = 1))
+    
+    # reorder columns
+    df_coaches = df_coaches[['Season', 'Week', 'Date', 'Day', 'Rank', 'School', 
+                             'Coach', 'Conf', 'Power5', 'Home_Away', 'Rank_Opp', 'Opponent', 
+                             'Conf_Opp', 'Power5_Opp', 'Win_Pct_Opp', 'Opp_Winning_Record',
+                             'Win_Pct_Conf_Opp', 'Opp_Conf_Winning_Record', 
+                             'Result', 'Pts', 'Pts_Opp', 'W_Sn', 
+                             'L_Sn', 'T_Sn', 'AP_Pre', 'AP_High', 'AP_Post', 
+                             'Notes', 'Bowl', 'url_boxscore']]
+    
+    # Engineer variables for each coach's stint/tenure at a given school=
+    df_engineered = pd.DataFrame()
+    for index, grp in tqdm.tqdm(df_coaches.groupby(['School', 'Coach'])):
+        if len(df_engineered) == 0:
+            df_engineered = add_tenure_features(grp, games_sf)
+        else:
+            df_engineered = df_engineered.append(add_tenure_features(grp, games_sf))
+        
+    return df_engineered
+
+def add_tenure_features(df_coach, games_sf):
+    '''
+    Purpose: Manage the engineering of features across a coach's tenure at a
+        a given school (while also accounting for those coaches who have 
+        multiple coaching stints/tenures at the same school)
+
+    Inputs   
+    ------
+        df_coach : Pandas DataFrame
+            Contains data for all seasons a coach has coached at a given school
+        games_sf : int
+            Scott Frost's current number of games
+            
+    Outputs
+    -------
+        df_coach_eng : Pandas DataFrame
+            Contains input data with newly engineered features that span the
+                whole coaching tenure, not just seasons
+    '''  
+    # Step 1. Identify if the coach's dataframe has multiple stints 
+    #   (i.e. gaps in years between tenures at the same school)
+    num_stints = 1
+    list_stint_end = []
+    list_years = list(df_coach['Season'])
+    for num_ele in list(range(0,len(list_years))):
+        if (num_ele == 0):
+            pass
+        else:
+            if list_years[num_ele] - list_years[num_ele-1] > 1:
+                # print(f"Gap detected for coach: {df_coach.iloc[0]['coach']}")
+                # print(f"  -- Gap between {list_years[num_ele]} and {list_years[num_ele-1]}")
+                list_stint_end.append(list_years[num_ele-1])
+                num_stints = num_stints + 1
+                
+    # Step 2.A. Handle coaches with multiple stints (i.e. gaps in years)
+    if num_stints >= 2:
+        df_coach_eng = pd.DataFrame()
+        for stint_count in list(range(0,num_stints)):
+            # handle the first coaching stint
+            if stint_count == 0:
+                year_stint_end = list_stint_end[stint_count]
+                df_stint = df_coach[df_coach['Season'] <= year_stint_end].copy()
+            # handle coaching stints 2 through num_stints - 1
+            elif stint_count < num_stints-1:
+                year_stint_end = list_stint_end[stint_count]
+                year_stint_end_prev = list_stint_end[stint_count-1]
+                df_stint = df_coach[df_coach['Season'] <= year_stint_end].copy()
+                df_stint = df_stint[df_stint['Season'] > year_stint_end_prev].copy()
+            # handle the last coaching stint
+            else:
+                year_stint_end_prev = list_stint_end[stint_count-1]
+                df_stint = df_coach[df_coach['Season'] > year_stint_end_prev].copy()
+            # engineer new features and add to coach's tenure dataframe
+            if len(df_coach_eng) == 0:
+                df_coach_eng = engineer_stint_features(df_stint, games_sf)
+            else:
+                df_coach_eng = df_coach_eng.append(engineer_stint_features(df_stint, games_sf))
+            # print(f"Coach: {df_stint['Coach'].iloc[0]}, Games: {len(df_stint)}")
+    # Step 2.B. Handle coaches with only a single stint at the respective school
+    else:
+        df_coach_eng = engineer_stint_features(df_coach, games_sf)
+        
+    return df_coach_eng
+        
+def engineer_stint_features(df_tenure, games_sf):
+    '''
+    Purpose: Engineer features across a coach's tenure at a given school 
+
+    Inputs   
+    ------
+        df_tenure : Pandas DataFrame
+            Contains data for all seasons in a tenure for a given coach/school combo
+        games_sf : int
+            Scott Frost's current number of games
+            
+    Outputs
+    -------
+        df_tenure : Pandas DataFrame
+            Contains input data with newly engineered features 
+    '''     
+    # df_tenure = df_coaches[(df_coaches['School'] == 'Nebraska') & (df_coaches['Coach'] == 'Scott Frost')].copy()
+    # df_tenure = df_coaches[(df_coaches['School'] == 'Nebraska') & (df_coaches['Coach'] == 'Mike Riley')].copy()
+    # df_tenure = df_coaches[(df_coaches['School'] == 'Nebraska') & (df_coaches['Coach'] == 'Tom Osborne')].copy()
+    
+    # 0. Total seasons
+    row_counts = list(df_tenure.Season.value_counts())
+    list_seasons = []
+    for idx in range(0,len(row_counts)):
+        list_seasons = list_seasons + ([idx+1] * row_counts[idx])
+    df_tenure['Sn'] = list_seasons
+    
+    # 1. Total games
+    df_tenure['G'] = list(range(1,len(df_tenure)+1))
+
+    # 2. Total wins
+    df_tenure['W'] = df_tenure.Result.eq('W').cumsum()
+    
+    # 3. Total losses
+    df_tenure['L'] = df_tenure.Result.eq('L').cumsum()
+    
+    # 4. Total ties
+    df_tenure['T'] = df_tenure.Result.eq('T').cumsum()
+    df_tenure['T'] = df_tenure['T'].fillna(0)
+    
+    # 5. Win Pct.
+    if (len(df_tenure) == 1) and (int(df_tenure['G']) == 0):
+            df_tenure['Win_Pct'] = 0
+    else:
+        df_tenure['Win_Pct'] = df_tenure.apply(lambda row: row['W'] / row['G'] 
+                                               if row['G'] != 0 else 0, axis = 1)
+    
+    # 6. Create conference win/loss flag
+    list_conf_flag = []
+    for index, row in df_tenure.iterrows():
+         if (row['Result'] == 'W') and (row['Conf'] == row['Conf_Opp']):
+             list_conf_flag.append('W')
+         elif (row['Result'] == 'L') and (row['Conf'] == row['Conf_Opp']):
+             list_conf_flag.append('L') 
+         elif (row['Result'] == 'T') and (row['Conf'] == row['Conf_Opp']):
+             list_conf_flag.append('T') 
+         else:
+             list_conf_flag.append('')
+    df_tenure['Result_Conf'] = list_conf_flag
+    
+    # 7. Total conference games
+    df_tenure['G_Conf'] = df_tenure.Result_Conf.ne('').cumsum()
+             
+    # 8. Total conference wins
+    df_tenure['W_Conf'] = df_tenure.Result_Conf.eq('W').cumsum()
+    
+    # 9. Total conference losses
+    df_tenure['L_Conf'] = df_tenure.Result_Conf.eq('L').cumsum()
+    
+    # 10. Total conference ties
+    df_tenure['T_Conf'] = df_tenure.Result_Conf.eq('T').cumsum()
+    
+    # 11. Conference Win Pct.
+    df_tenure['Win_Pct_Conf'] = df_tenure.apply(
+        lambda row: row['W_Conf'] / row['G_Conf'] if row['G_Conf'] != 0 else 0, axis = 1)
+    # if (len(df_tenure) == 1) and (int(df_tenure['G_Conf']) == 0):
+    #         df_tenure['Win_Pct_Conf'] = 0
+    # else:
+    #     df_tenure['Win_Pct_Conf'] = df_tenure.apply(lambda row: row['W_Conf'] / row['G_Conf'] 
+    #                                            if row['G_Conf'] != 0 else 0, axis = 1)
+     
+    # 12. Create top 25 opponent win/loss flag
+    list_top25_results = []
+    for index, row in df_tenure.iterrows():
+        if (row['Result'] == 'W') and (~np.isnan(row['Rank_Opp'])):
+            list_top25_results.append('W')
+        elif (row['Result'] == 'L') and (~np.isnan(row['Rank_Opp'])):
+            list_top25_results.append('L')
+        elif (row['Result'] == 'T') and (~np.isnan(row['Rank_Opp'])):
+            list_top25_results.append('T')
+        else:
+            list_top25_results.append('')
+    df_tenure['Result_Top25_Opp'] = list_top25_results
+    
+    # 13. Wins vs. AP Top-25
+    df_tenure['W_vs_Rank'] = df_tenure.Result_Top25_Opp.eq('W').cumsum()
+    
+    # 14. Losses vs. AP Top-25
+    df_tenure['L_vs_Rank'] = df_tenure.Result_Top25_Opp.eq('L').cumsum()
+    
+    # 15. Ties vs AP Top-25
+    df_tenure['T_vs_Rank'] = df_tenure.Result_Top25_Opp.eq('T').cumsum()
+    
+    # 16. Win Pct. vs AP Top-25
+    df_tenure['Win_Pct_vs_Rank'] = df_tenure.apply(
+        lambda row: row['W_vs_Rank'] / (row['W_vs_Rank'] + row['L_vs_Rank'] + row['T_vs_Rank']) 
+        if (row['W_vs_Rank'] + row['L_vs_Rank'] + row['T_vs_Rank']) != 0 else 0, axis = 1)
+        
+    # 17. Total bowl games
+    df_tenure['Bowl_G'] = df_tenure.Notes.str.contains('Bowl').eq(True).cumsum()
+    
+    # 18. Create bowl win/loss flag
+    list_bowl_results = []
+    for index, row in df_tenure.iterrows():
+        if (row['Result'] == 'W') and ('Bowl' in str(row['Notes'])):
+            list_bowl_results.append('W')
+        elif (row['Result'] == 'L') and ('Bowl' in str(row['Notes'])):
+            list_bowl_results.append('L')
+        elif (row['Result'] == 'T') and ('Bowl' in str(row['Notes'])):
+            list_bowl_results.append('T')
+        else:
+            list_bowl_results.append('')
+    df_tenure['Result_Bowl'] = list_bowl_results
+    
+    # 19. Bowl Wins
+    df_tenure['Bowl_W'] = df_tenure.Result_Bowl.eq('W').cumsum()
+    
+    # 20. Bowl Losses
+    df_tenure['Bowl_L'] = df_tenure.Result_Bowl.eq('L').cumsum()
+    
+    # 21. Bowl Ties
+    df_tenure['Bowl_T'] = df_tenure.Result_Bowl.eq('T').cumsum()
+    
+    # 22. Bowl Win Pct.
+    df_tenure['Win_Pct_Bowl'] = df_tenure.apply(
+        lambda row: row['Bowl_W'] / (row['Bowl_W'] + row['Bowl_L'] + row['Bowl_T']) 
+        if (row['Bowl_W'] + row['Bowl_L'] + row['Bowl_T']) != 0 else 0, axis = 1)
+    
+    # 23. Calculate # of seasons with pre-post season AP Top 25 rankings
+    list_AP_Pre_counts     = []
+    list_AP_Post_25_counts = []
+    list_AP_Post_10_counts = []
+    list_AP_Post_5_counts  = []
+    list_game_counts = []
+    for season, grp in df_tenure.groupby('Season'):
+        list_AP_Pre_counts     = list_AP_Pre_counts + [1 if ~np.isnan(grp.AP_Pre.iloc[0]) else 0]
+        list_AP_Post_25_counts = list_AP_Post_25_counts + [1 if grp.AP_Post.iloc[0] <= 25 else 0]
+        list_AP_Post_10_counts = list_AP_Post_10_counts + [1 if grp.AP_Post.iloc[0] <= 10 else 0]
+        list_AP_Post_5_counts  = list_AP_Post_5_counts  + [1 if grp.AP_Post.iloc[0] <= 5  else 0]
+        list_game_counts = list_game_counts + [len(grp)]
+    series_AP_Pre_counts     = pd.Series(list_AP_Pre_counts).cumsum()
+    series_AP_Post_25_counts = pd.Series(list_AP_Post_25_counts).cumsum()
+    series_AP_Post_10_counts = pd.Series(list_AP_Post_10_counts).cumsum()
+    series_AP_Post_5_counts  = pd.Series(list_AP_Post_5_counts).cumsum()
+        
+    # 24. Total Years in AP Top-25 (Preaseason)   
+    df_tenure['AP_Pre_count'] = sum([[x]*y for x,y in zip(series_AP_Pre_counts, list_game_counts)], [])
+    
+    # 25. Total Years in AP Top-25 (Postseason)
+    df_tenure['AP_Post_25_count'] = sum([[x]*y for x,y in zip(series_AP_Post_25_counts, list_game_counts)], [])
+    
+    # 26. Total Years in AP Top-10 (Postseason)
+    df_tenure['AP_Post_10_count'] = sum([[x]*y for x,y in zip(series_AP_Post_10_counts, list_game_counts)], [])
+    
+    # 27. Total Years in AP Top-5 (Postseason)
+    df_tenure['AP_Post_5_count'] = sum([[x]*y for x,y in zip(series_AP_Post_5_counts, list_game_counts)], [])
+    
+    # 28. Total Weeks in AP Top-25
+    df_tenure['Weeks_Ranked'] = list(pd.Series([1 if ~np.isnan(x) else 0 for x in df_tenure.Rank]).cumsum())
+    
+    # 29. Weeks Ranked in AP Top-25 Pct.
+    df_tenure['Weeks_Ranked_Pct.'] = df_tenure.apply(lambda row: row['Weeks_Ranked'] / row['G'], axis = 1)
+
+    # 30. Season Conference Wins
+    list_conf_wins = []
+    for season, grp in df_tenure.groupby(['Season']):
+        list_conf_wins = list_conf_wins + list(grp.Result_Conf.eq('W').cumsum())
+    df_tenure['W_Sn_Conf'] = list_conf_wins
+    
+    # 31. Season Conference Losses
+    list_conf_losses = []
+    for season, grp in df_tenure.groupby(['Season']):
+        list_conf_losses = list_conf_losses + list(grp.Result_Conf.eq('L').cumsum())
+    df_tenure['L_Sn_Conf'] = list_conf_losses
+    
+    # 31. Season Conference Ties
+    list_conf_ties = []
+    for season, grp in df_tenure.groupby(['Season']):
+        list_conf_ties = list_conf_ties + list(grp.Result_Conf.eq('T').cumsum())
+    df_tenure['T_Sn_Conf'] = list_conf_ties
+    
+    # 32. Season Win Pct.
+    df_tenure['Win_Pct_Sn'] = df_tenure.apply(lambda row: row['W_Sn'] / row['Week'], axis = 1)
+    
+    # 33. Season Conference Win Pct.
+    df_tenure['Win_Pct_Sn_Conf'] = df_tenure.apply(
+        lambda row: row['W_Sn_Conf'] / (row['W_Sn_Conf'] + row['L_Sn_Conf'] + row['T_Sn_Conf']) 
+        if (row['W_Sn_Conf'] + row['L_Sn_Conf'] + row['T_Sn_Conf']) != 0 else 0, axis = 1)
+    
+    # 34. Winning Seasons
+    list_final_win_pct = list(df_tenure.groupby('Season').tail(1).Win_Pct_Sn)
+    list_winning_seasons = [1 if x > .5 else 0 for x in list_final_win_pct]
+    list_win_sn_cnt = []
+    for idx in range(0,len(row_counts)):
+        list_win_sn_cnt = list_win_sn_cnt + ([list_winning_seasons[idx]] * row_counts[idx])
+    df_tenure['Winning_Sns'] = list_win_sn_cnt
+    
+    # 35. Create a flag for win/loss vs Power 5 teams
+    list_p5_results = []
+    for index, row in df_tenure.iterrows():
+        if (row['Result'] == 'W') and (row['Power5_Opp'] == True):
+            list_p5_results.append('W')
+        elif (row['Result'] == 'L') and (row['Power5_Opp'] == True):
+            list_p5_results.append('L')
+        elif (row['Result'] == 'T') and (row['Power5_Opp'] == True):
+            list_p5_results.append('T')
+        else:
+            list_p5_results.append('')
+    df_tenure['Results_P5'] = list_p5_results
+    
+    # 36. Games vs. Power 5 teams
+    df_tenure['G_P5'] = df_tenure.Results_P5.ne('').cumsum()
+    
+    # 37. Wins vs. Power 5 teams
+    df_tenure['W_P5'] = df_tenure.Results_P5.eq('W').cumsum()
+    
+    # 38. Losses vs. Power 5 teams
+    df_tenure['L_P5'] = df_tenure.Results_P5.eq('L').cumsum()
+    
+    # 39. Ties vs. Power 5 teams
+    df_tenure['T_P5'] = df_tenure.Results_P5.eq('T').cumsum()
+    
+    # 40. Win Pct. vs Power 5 teams
+    df_tenure['Win_Pct_P5'] = df_tenure.apply(
+        lambda row: row['W_P5'] / row['G_P5'] if row['G_P5'] != 0 else 0, axis = 1)
+    
+    # 41. Create a flag for win/loss vs. teams with > .500 records
+    list_winning_results = []
+    for index, row in df_tenure.iterrows():
+        if (row['Result'] == 'W') and (row['Opp_Winning_Record'] == True):
+            list_winning_results.append('W')
+        elif (row['Result'] == 'L') and (row['Opp_Winning_Record'] == True):
+            list_winning_results.append('L')
+        elif (row['Result'] == 'T') and (row['Opp_Winning_Record'] == True):
+            list_winning_results.append('T')
+        else:
+            list_winning_results.append('')
+    df_tenure['Results_vs_Winning'] = list_winning_results
+    
+    # 42. Games vs. teams with winning (> .500) records
+    df_tenure['G_vs_Winning'] = df_tenure.Results_vs_Winning.ne('').cumsum()
+    
+    # 43. Wins vs. teams with winning (> .500) records
+    df_tenure['W_vs_Winning'] = df_tenure.Results_vs_Winning.eq('W').cumsum()
+    
+    # 44. Losses vs. teams with winning (> .500) records
+    df_tenure['L_vs_Winning'] = df_tenure.Results_vs_Winning.eq('L').cumsum()
+    
+    # 45. Ties vs. teams with winning (> .500) records
+    df_tenure['T_vs_Winning'] = df_tenure.Results_vs_Winning.eq('T').cumsum()
+    
+    # 46. Win Pct. vs. teams with winning (> .500 ) records
+    df_tenure['Win_Pct_vs_Winning'] = df_tenure.apply(
+        lambda row: row['W_vs_Winning'] / row['G_vs_Winning'] if row['G_vs_Winning'] != 0 else 0, axis = 1)
+    
+    # 47. Create a flag for win/loss vs. teams with > .500 records in conference
+    list_winning_results_conf = []
+    for index, row in df_tenure.iterrows():
+        if ((row['Result'] == 'W') and (
+                row['Opp_Conf_Winning_Record'] == True)) and (
+                    row['Conf'] == row['Conf_Opp']):
+                        list_winning_results_conf.append('W')
+        elif ((row['Result'] == 'L') and (
+                row['Opp_Conf_Winning_Record'] == True)) and (
+                    row['Conf'] == row['Conf_Opp']):
+                        list_winning_results_conf.append('L')
+        elif ((row['Result'] == 'T') and (
+                row['Opp_Conf_Winning_Record'] == True)) and (
+                    row['Conf'] == row['Conf_Opp']):
+                        list_winning_results_conf.append('T')
+        else:
+            list_winning_results_conf.append('')
+    df_tenure['Results_vs_Winning_Conf'] = list_winning_results_conf
+    
+    # 48. Games vs. teams with winning (> .500) records in conference
+    df_tenure['G_vs_Winning_Conf'] = df_tenure.Results_vs_Winning_Conf.ne('').cumsum()
+    
+    # 49. Wins vs. teams with winning (> .500) records in conference
+    df_tenure['W_vs_Winning_Conf'] = df_tenure.Results_vs_Winning_Conf.eq('W').cumsum()
+    
+    # 50. Losses vs. teams with winning (> .500) records in conference
+    df_tenure['L_vs_Winning_Conf'] = df_tenure.Results_vs_Winning_Conf.eq('L').cumsum()
+    
+    # 51. Ties vs. teams with winning (> .500) records in conference
+    df_tenure['T_vs_Winning_Conf'] = df_tenure.Results_vs_Winning_Conf.eq('T').cumsum()
+    
+    # 52. Win Pct. vs. teams with winning (> .500) records in conference
+    df_tenure['Win_Pct_vs_Winning_Conf'] = df_tenure.apply(
+        lambda row: row['W_vs_Winning_Conf'] / row['G_vs_Winning_Conf'] if row['G_vs_Winning_Conf'] != 0 else 0, axis = 1)
+    
+    # test = df_tenure[['Season', 'Week', 'Opponent', 'Win_Pct_Opp', 'Opp_Winning_Record', 'Results_vs_Winning', 'G_vs_Winning', 'W_vs_Winning', 'L_vs_Winning', 'Win_Pct_vs_Winning']]
+    # test = df_tenure[['Season', 'Week', 'Opponent', 'Win_Pct_Conf_Opp', 'Opp_Conf_Winning_Record', 
+    #                   'Results_vs_Winning_Conf', 'G_vs_Winning_Conf', 
+    #                   'W_vs_Winning_Conf', 'L_vs_Winning_Conf', 'Win_Pct_vs_Winning_Conf']]
+    
+    # 53. Calculate the coach's winning pct at the same number of games as SF's current total
+    if len(df_tenure) >= games_sf:
+        df_tenure['Win_Pct_at_SF'] = [float(df_tenure[df_tenure['G'] == games_sf]['Win_Pct'])] * len(df_tenure)
+    else:
+        df_tenure['Win_Pct_at_SF'] = [np.nan] * len(df_tenure)
+    
+    # 54. Reorder columns
+    df_tenure = df_tenure[['Season', 'Week', 'Date', 'Day', 'Rank', 'School',
+                            'Coach', 'Conf', 'Power5', 'Home_Away', 'Rank_Opp',
+                            'Opponent', 'Conf_Opp', 'Power5_Opp', 'Result', 'Pts', 'Pts_Opp', 
+                            'Sn', 'G', 'W', 'L', 'T', 'Win_Pct', 
+                            'G_Conf', 'W_Conf', 'L_Conf', 'T_Conf', 'Win_Pct_Conf',
+                            'G_P5', 'W_P5', 'L_P5', 'T_P5', 'Win_Pct_P5',
+                            'G_vs_Winning', 'W_vs_Winning', 'L_vs_Winning', 'T_vs_Winning', 'Win_Pct_vs_Winning',
+                            'G_vs_Winning_Conf', 'W_vs_Winning_Conf', 'L_vs_Winning_Conf', 'T_vs_Winning_Conf', 'Win_Pct_vs_Winning_Conf',
+                            'W_Sn', 'L_Sn', 'T_Sn', 'Win_Pct_Sn', 
+                            'W_Sn_Conf', 'L_Sn_Conf', 'T_Sn_Conf', 'Win_Pct_Sn_Conf', 
+                            'W_vs_Rank', 'L_vs_Rank', 'T_vs_Rank', 'Win_Pct_vs_Rank', 
+                            'Winning_Sns',
+                            'Bowl_G', 'Bowl_W', 'Bowl_L', 'Bowl_T', 'Win_Pct_Bowl', 
+                            'AP_Pre', 'AP_High', 'AP_Post', 
+                            'AP_Pre_count', 'AP_Post_25_count', 'AP_Post_10_count', 'AP_Post_5_count',
+                            'Weeks_Ranked', 'Weeks_Ranked_Pct.',
+                            'Win_Pct_at_SF',
+                            'Notes', 'url_boxscore']]
+    
+    return df_tenure
+
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
 #==============================================================================
 # Working Code
 #==============================================================================
@@ -1116,6 +1790,7 @@ os.chdir(path_dir)
 #------------------------------------------------------------------------------
 # Scrape and compile data for individual team games
 #------------------------------------------------------------------------------
+<<<<<<< HEAD
 # AP poll started in 1936
 
 scrape_and_compile_coaching_data(2021)
@@ -1135,6 +1810,108 @@ df_schools = pd.read_csv(max(glob.iglob(
 # Create week-by-week records for all coaches
 #------------------------------------------------------------------------------
 games_sf = 44
+=======
+# Scrape updated results for most recent season
+scrapeCfbResultsAllYears(2021)
+df_all_games = pd.DataFrame()
+for fname in tqdm.tqdm(list(path_dir.joinpath('data/raw/Team History').glob('records*.csv'))):
+    # load file
+    df = pd.read_csv(fname)
+    # drop rows without scores
+    df = df[df['Result'].notna()]
+    if '2020' in str(fname):
+        list_years = []
+        for date in df['Date']:
+            if '-' in date:
+                year = int(datetime.datetime.strptime(date, "%d-%b-%y").strftime('%Y'))
+                month = datetime.datetime.strptime(date, "%d-%b-%y").strftime('%b')
+                if month == 'Jan':
+                    year = year-1
+            else:
+                year    = int(datetime.datetime.strptime(date, '%b %d, %Y').strftime('%Y'))
+                month   = datetime.datetime.strptime(date, '%b %d, %Y').strftime('%b')
+                if month == 'Jan':
+                    year = year-1
+            list_years.append(year)
+        df['Year'] = list_years
+        df = df[df['Year'] < 2020]
+    # add team to master dataframe
+    if len(df_all_games) == 0:
+        df_all_games = df.copy()
+    else:
+        df_all_games = df_all_games.append(df)
+# add year variable to all-games DataFrame
+list_years = []
+list_dates = []
+for date in df_all_games['Date']:
+    if '-' in date:
+        year = int(datetime.datetime.strptime(date, "%d-%b-%y").strftime('%Y'))
+        month = datetime.datetime.strptime(date, "%d-%b-%y").strftime('%b')
+        if month == 'Jan':
+            year = year-1
+        date_reformatted = datetime.datetime.strptime(date, "%d-%b-%y").strftime("%d-%b-%y")
+    else:
+        year    = int(datetime.datetime.strptime(date, '%b %d, %Y').strftime('%Y'))
+        month   = datetime.datetime.strptime(date, '%b %d, %Y').strftime('%b')
+        if month == 'Jan':
+            year = year-1
+        date_reformatted = datetime.datetime.strptime(date, '%b %d, %Y').strftime("%d-%b-%y")
+    list_years.append(year)
+    list_dates.append(date_reformatted)
+df_all_games['Date'] = list_dates
+df_all_games['Year'] = list_years
+df_all_games = df_all_games.drop(columns = 'Time')
+# remove duplicate games
+df_all_games = df_all_games.drop_duplicates()
+# remove 2 exhibition games from New Mexico State's schedule
+df_all_games = df_all_games[~df_all_games.Opponent.isin(['Tarleton State', 'Dixie State'])]
+# reset index
+df_all_games = df_all_games.reset_index(drop = True)
+
+# Create timestamp for filename and save to disk
+ts = datetime.date.fromtimestamp(time.time())
+df_all_games.to_csv(rf'data\raw\Team History\ALL_records_{ts}.csv', index = False)
+
+# # Ingest the most recent team history file
+# df_all_games = pd.read_csv(max(glob.iglob(r'data\raw\Team History\ALL_records*.csv'), key=os.path.getmtime))
+
+#------------------------------------------------------------------------------
+# Scrape and compile data for coaches across years
+#------------------------------------------------------------------------------
+# Scrape coaching data for all available years (i.e. teams + coaches)
+df_schools = scrapeCfbSchoolsAllYears()
+df_schools = df_schools.reset_index(drop = True)
+df_schools = df_schools.apply(pd.to_numeric, errors = 'ignore')
+
+# fix an error with 2015 UCF
+row_index = df_schools[(df_schools['School'] == 'UCF') & (df_schools['Year'] == 2015)].index[0]
+list_coaches = df_schools['Coach(es)'].copy()
+list_coaches[row_index] = "George O'Leary (0-8), Danny Barrett (0-4)"
+df_schools['Coach(es)'] = list_coaches
+
+# Create timestamp for filename and save to disk
+ts = datetime.date.fromtimestamp(time.time())
+df_schools.to_csv(rf'data\raw\Team History\team_history_fb_{ts}.csv', index = False)
+
+# # Ingest the most recent team history file
+# df_schools = pd.read_csv(max(glob.iglob(r'data\raw\Team History\team_history*.csv'), key=os.path.getmtime))
+
+#------------------------------------------------------------------------------
+# Create a dataframe of coaching information given school info
+#------------------------------------------------------------------------------
+# df_coaches = create_coach_dataframe(df_schools)
+
+#------------------------------------------------------------------------------
+# Using historic coaching data, create a new dataframe that calculates
+#   year-over-year totals for each coach
+#------------------------------------------------------------------------------
+# df_coaches = calculate_year_by_year(df_coaches)
+
+#------------------------------------------------------------------------------
+# Create week-by-week records for all coaches
+#------------------------------------------------------------------------------
+games_sf = 40
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
 df_coaches = create_week_by_week_dataframe(df_all_games, df_schools, games_sf)
 
 # Save coaching data to disk
@@ -1145,6 +1922,7 @@ df_coaches.to_csv(rf'data\processed\Coaches\coaching_history_{ts}.csv', index = 
 # Start of Scott Frost Analysis (DO THIS BEFORE ALL OTHER ANALYSIS)
 #------------------------------------------------------------------------------
 # Ingest the most recent coaching history file
+<<<<<<< HEAD
 df_coaches = pd.read_csv(max(glob.iglob(
     r'data\processed\Coaches\coaching_history*.csv'), key=os.path.getmtime))
 df_coaches = df_coaches.apply(pd.to_numeric, errors = 'ignore')
@@ -1230,6 +2008,180 @@ sf_gp = int(sf['G'])
 #                     'AP_Pre_count', 'AP_Post_25_count', 
 #                     'AP_Post_10_count', 'AP_Post_5_count',
 #                     'Weeks_Ranked', 'Weeks_Ranked_Pct.']]
+=======
+df_coaches = pd.read_csv(max(glob.iglob(r'data\processed\Coaches\coaching_history*.csv'), key=os.path.getmtime))
+df_coaches = df_coaches.apply(pd.to_numeric, errors = 'ignore')
+
+# Isolate Scott Frost's data
+df_sf = df_coaches[(df_coaches['School'] == 'Nebraska') & (df_coaches['Coach'] == 'Scott Frost')]
+
+# Isolate Scott Frost's Last Game Coached
+sf = df_coaches[(df_coaches['Coach'] == 'Scott Frost') & (df_coaches['School'] == 'Nebraska')].iloc[[-1],:]
+
+# Isolate Scott Frost's Games Played
+sf_gp = int(sf['G'])
+
+#------------------------------------------------------------------------------
+# Active FBS Coaches
+#------------------------------------------------------------------------------
+# 1. Isolate active coaches
+df_active = pd.DataFrame()
+df_current = df_coaches[df_coaches['Season'] == 2021]
+for tup, grp in df_current.groupby(['School']):
+    if len(df_active) == 0:
+        df_active = grp.tail(1)
+    else:
+        df_active = df_active.append(grp.tail(1))
+        
+# 2. Isolate those who have coached as many games as Frost
+df_active = df_active[df_active['G'] >= sf_gp]
+
+# 3. Drop unneeded columns
+df_active = df_active.drop(columns = ['Week', 'Rank', 'Date', 'Day', 'Home_Away', 
+                                      'Rank_Opp', 'Opponent',
+                                      'Conf_Opp', 'Power5_Opp', 'Result',
+                                      'Pts', 'Pts_Opp','Notes', 'url_boxscore',
+                                      'T', 'T_Conf', 'T_P5', 'T_vs_Winning',
+                                      'T_vs_Winning_Conf', 'T_Sn', 'T_Sn_Conf',
+                                      'T_vs_Rank', 'Bowl_T'])
+
+#------------------------------------------------------------------------------
+# All Time (as many games, or more, as Frost)
+#------------------------------------------------------------------------------
+# 1. Isolate those who have coached as many games as Frost
+df_subset = df_coaches[df_coaches['G'] >= sf_gp]
+df_final = pd.DataFrame()
+for tup, grp in df_subset.groupby(['School', 'Coach']):
+    if len(df_final) == 0:
+        df_final = grp.iloc[[-1],:].copy()
+    else:
+        df_final = df_final.append(grp.iloc[[-1],:])
+
+# 2. Drop unneeded columns
+df_final = df_final[['Season', 'School', 'Coach', 'Conf',
+                    'Power5', 
+                    'Sn', 'G', 'W', 'L', 'Win_Pct',
+                    'G_Conf', 'W_Conf', 'L_Conf', 'Win_Pct_Conf',
+                    'G_P5', 'W_P5', 'L_P5', 'Win_Pct_P5',
+                    'G_vs_Winning', 'W_vs_Winning', 'L_vs_Winning', 'Win_Pct_vs_Winning',
+                    'G_vs_Winning_Conf', 'W_vs_Winning_Conf', 'L_vs_Winning_Conf', 'Win_Pct_vs_Winning_Conf',
+                    'W_Sn', 'L_Sn', 'Win_Pct_Sn', 'W_Sn_Conf', 'L_Sn_Conf', 'Win_Pct_Sn_Conf',
+                    'W_vs_Rank', 'L_vs_Rank', 'Win_Pct_vs_Rank', 
+                    'Winning_Sns', 
+                    'Bowl_G', 'Bowl_W', 'Bowl_L', 'Win_Pct_Bowl', 'Win_Pct_at_SF',
+                    'AP_Pre_count', 'AP_Post_25_count', 'AP_Post_10_count', 'AP_Post_5_count',
+                    'Weeks_Ranked', 'Weeks_Ranked_Pct.']]
+
+# 3. Limit coaches to those in the last 20 years
+df_final = df_final[df_final['Season'] >= 2001]
+
+# 4. Make a smaller dataframe for ranking/comparisons
+df_ranks = df_final[['Season', 'School', 'Coach', 'Conf', 'Power5', 'Sn', 'G', 
+                     'Win_Pct', 'Win_Pct_Conf', 'Win_Pct_P5', 'Win_Pct_vs_Winning', 
+                     'Win_Pct_vs_Winning_Conf', 'Win_Pct_vs_Rank', 'Winning_Sns', 'Bowl_G', 'Win_Pct_at_SF',
+                     'AP_Post_25_count', 'AP_Post_10_count', 'AP_Post_5_count', 'Weeks_Ranked']]
+
+# 5. Create rankings
+df_ranks = df_ranks.reset_index(drop = True)
+df_ranks['Win_Pct_rank']                = df_ranks['Win_Pct'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_Conf_rank']           = df_ranks['Win_Pct_Conf'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_P5_rank']             = df_ranks['Win_Pct_P5'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_vs_Winning_rank']     = df_ranks['Win_Pct_vs_Winning'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_vs_Winning_Conf_rank'] = df_ranks['Win_Pct_vs_Winning_Conf'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_vs_Rank_rank']        = df_ranks['Win_Pct_vs_Rank'].rank(method = 'min', ascending = False)
+
+# 6. Reorder columns
+df_ranks = df_ranks[['Season', 'School', 'Coach', 'Conf', 'Power5', 'Sn', 'G', 
+                     'Win_Pct', 'Win_Pct_rank',
+                     'Win_Pct_Conf', 'Win_Pct_Conf_rank', 
+                     'Win_Pct_P5', 'Win_Pct_P5_rank',
+                     'Win_Pct_vs_Winning', 'Win_Pct_vs_Winning_rank',
+                     'Win_Pct_vs_Winning_Conf', 'Win_Pct_vs_Winning_Conf_rank',
+                     'Win_Pct_vs_Rank', 'Win_Pct_vs_Rank_rank',
+                     'Winning_Sns', 'Bowl_G', 'Win_Pct_at_SF',
+                     'AP_Post_25_count', 'AP_Post_10_count', 'AP_Post_5_count', 'Weeks_Ranked']]
+
+oops = df_ranks[df_ranks['Win_Pct_at_SF'] <= float(sf['Win_Pct'])]
+
+#------------------------------------------------------------------------------
+# All Time (the exact same number of games as Frost)
+#------------------------------------------------------------------------------
+# 1. Isolate those who have coached as many games as Frost
+df_subset = df_coaches[df_coaches['G'] == sf_gp]
+df_final = pd.DataFrame()
+for tup, grp in df_subset.groupby(['School', 'Coach']):
+    if len(df_final) == 0:
+        df_final = df_coaches[(df_coaches['School'] == tup[0]) & (df_coaches['Coach'] == tup[1])].iloc[[-1],:].copy()
+    else:
+        df_final = df_final.append(df_coaches[(df_coaches['School'] == tup[0]) & (df_coaches['Coach'] == tup[1])].iloc[[-1],:])
+
+# 2. Drop unneeded columns
+df_final = df_final[['Season', 'School', 'Coach', 'Conf',
+                    'Power5', 
+                    'Sn', 'G', 'W', 'L', 'Win_Pct',
+                    'G_Conf', 'W_Conf', 'L_Conf', 'Win_Pct_Conf',
+                    'G_P5', 'W_P5', 'L_P5', 'Win_Pct_P5',
+                    'G_vs_Winning', 'W_vs_Winning', 'L_vs_Winning', 'Win_Pct_vs_Winning',
+                    'G_vs_Winning_Conf', 'W_vs_Winning_Conf', 'L_vs_Winning_Conf', 'Win_Pct_vs_Winning_Conf',
+                    'W_Sn', 'L_Sn', 'Win_Pct_Sn', 'W_Sn_Conf', 'L_Sn_Conf', 'Win_Pct_Sn_Conf',
+                    'W_vs_Rank', 'L_vs_Rank', 'Win_Pct_vs_Rank', 
+                    'Winning_Sns', 
+                    'Bowl_G', 'Bowl_W', 'Bowl_L', 'Win_Pct_Bowl', 'Win_Pct_at_SF', 
+                    'AP_Pre_count', 'AP_Post_25_count', 'AP_Post_10_count', 'AP_Post_5_count',
+                    'Weeks_Ranked', 'Weeks_Ranked_Pct.']]
+
+# 3. Limit coaches to those in the last 20 years
+# df_final = df_final[df_final['Season'] >= 2001]
+
+# 4. Make a smaller dataframe for ranking/comparisons
+df_ranks = df_final[['Season', 'School', 'Coach', 'Conf', 'Power5', 'Sn', 'G', 
+                     'Win_Pct', 'Win_Pct_Conf', 'Win_Pct_P5', 'Win_Pct_vs_Winning', 
+                     'Win_Pct_vs_Winning_Conf', 'Win_Pct_vs_Rank', 'Winning_Sns', 'Bowl_G', 'Win_Pct_at_SF',
+                     'AP_Post_25_count', 'AP_Post_10_count', 'AP_Post_5_count', 'Weeks_Ranked']]
+
+# 5. Create rankings
+df_ranks = df_ranks.reset_index(drop = True)
+df_ranks['Win_Pct_rank']                = df_ranks['Win_Pct'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_Conf_rank']           = df_ranks['Win_Pct_Conf'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_P5_rank']             = df_ranks['Win_Pct_P5'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_vs_Winning_rank']     = df_ranks['Win_Pct_vs_Winning'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_vs_Winning_Conf_rank'] = df_ranks['Win_Pct_vs_Winning_Conf'].rank(method = 'min', ascending = False)
+df_ranks['Win_Pct_vs_Rank_rank']        = df_ranks['Win_Pct_vs_Rank'].rank(method = 'min', ascending = False)
+
+# 6. Reorder columns
+df_ranks = df_ranks[['Season', 'School', 'Coach', 'Conf', 'Power5', 'Sn', 'G', 
+                     'Win_Pct', 'Win_Pct_rank',
+                     'Win_Pct_Conf', 'Win_Pct_Conf_rank', 
+                     'Win_Pct_P5', 'Win_Pct_P5_rank',
+                     'Win_Pct_vs_Winning', 'Win_Pct_vs_Winning_rank',
+                     'Win_Pct_vs_Winning_Conf', 'Win_Pct_vs_Winning_Conf_rank',
+                     'Win_Pct_vs_Rank', 'Win_Pct_vs_Rank_rank',
+                     'Winning_Sns', 'Bowl_G', 'Win_Pct_at_SF',
+                     'AP_Post_25_count', 'AP_Post_10_count', 'AP_Post_5_count', 'Weeks_Ranked']]
+
+oops = df_ranks[df_ranks['Win_Pct'] <= float(sf['Win_Pct'])]
+
+# Subset the data to coaches have coached at least the same number of games as Scott
+df_history = df_coaches[df_coaches['G'] >= sf_gp]
+df_history = df_history.reset_index(drop = True)
+
+# Create a subset snap-shot to isolate all coaching records to match Scott's timeframe (i.e. Games coached)
+df_snapshot = df_coaches[df_coaches['G'] == sf_gp]
+df_snapshot = df_snapshot.reset_index(drop = True)
+
+# Isolate Scott Frost's Winning %
+sf_win_pct = float(df_yr_4[df_yr_4['coach'] == 'Scott Frost']['cum_win_pct'])
+
+# Subset the data to be only coaches within the last 25 years
+df_yr_4 = df_yr_4[df_yr_4['year'] >= 1991]
+
+# # Save coaches with 4 or more years of tenure to disk
+# ts = datetime.date.fromtimestamp(time.time())
+# df_yr_4.to_csv(rf'data\raw\Coaches\coaching_history_year_3_{ts}.csv', index = False)
+
+# Subset the data to coaches with a winning percentage the same as or worse than Scott
+df_bad = df_yr_4[df_yr_4['cum_win_pct'] < sf_win_pct]
+>>>>>>> 55366a4305b3f99adab491b38426258b0a28e62f
 
 # # 3. Limit coaches to those in the last 20 years
 # df_final = df_final[df_final['Season'] >= 2001]
